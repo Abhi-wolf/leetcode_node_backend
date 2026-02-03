@@ -9,9 +9,7 @@ export interface IProblemRepository {
     updateData: Partial<IProblem>,
   ): Promise<IProblem | null>;
   deleteProblem(id: string): Promise<boolean>;
-  findProblemsByDifficulty(
-    difficulty: "easy" | "medium" | "hard",
-  ): Promise<IProblem[]>;
+  findByDifficulty(difficulty: "easy" | "medium" | "hard"): Promise<IProblem[]>;
   searchProblems(query: string): Promise<IProblem[]>;
 }
 
@@ -45,7 +43,7 @@ export class ProblemRepository implements IProblemRepository {
     return result !== null;
   }
 
-  async findProblemsByDifficulty(
+  async findByDifficulty(
     difficulty: "easy" | "medium" | "hard",
   ): Promise<IProblem[]> {
     return await Problem.find({ difficulty });

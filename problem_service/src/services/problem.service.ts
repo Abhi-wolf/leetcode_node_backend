@@ -1,8 +1,11 @@
-import { CreateProblemDto, UpdateProblemDto } from "../dtos/problem.dto";
 import { IProblem } from "../models/problem.model";
 import { IProblemRepository } from "../repositories/problem.repository";
 import { BadRequestError, NotFoundError } from "../utils/errors/app.error";
 import { sanitizeMarkdown } from "../utils/markdown.sanitizer";
+import {
+  CreateProblemDto,
+  UpdateProblemDto,
+} from "../validators/problem.validator";
 
 export interface IProblemService {
   createProblem(problem: CreateProblemDto): Promise<IProblem>;
@@ -13,9 +16,7 @@ export interface IProblemService {
     updateData: UpdateProblemDto,
   ): Promise<IProblem | null>;
   deleteProblem(id: string): Promise<boolean>;
-  findProblemsByDifficulty(
-    difficulty: "easy" | "medium" | "hard",
-  ): Promise<IProblem[]>;
+  findByDifficulty(difficulty: "easy" | "medium" | "hard"): Promise<IProblem[]>;
   searchProblems(query: string): Promise<IProblem[]>;
 }
 
@@ -36,6 +37,8 @@ export class ProblemService implements IProblemService {
       editorial:
         problem.editorial && (await sanitizeMarkdown(problem.editorial)),
     };
+
+    console.log("Sanitized payload:", sanitizedPayload);
 
     return await this.problemRepository.createProblem(sanitizedPayload);
   }
@@ -91,10 +94,10 @@ export class ProblemService implements IProblemService {
     return await this.problemRepository.deleteProblem(id);
   }
 
-  async findProblemsByDifficulty(
+  async findByDifficulty(
     difficulty: "easy" | "medium" | "hard",
   ): Promise<IProblem[]> {
-    return await this.problemRepository.findProblemsByDifficulty(difficulty);
+    return await this.problemRepository.findByDifficulty(difficulty);
   }
 
   async searchProblems(query: string): Promise<IProblem[]> {
