@@ -1,0 +1,74 @@
+import mongoose, { Document } from "mongoose";
+
+export enum SubmissionStatus {
+  PENDING = "pending",
+  ACCEPTED = "accepted",
+  WRONG_ANSWER = "wrong_answer",
+  TIME_LIMIT_EXCEEDED = "time_limit_exceeded",
+  RUNTIME_ERROR = "runtime_error",
+  COMPILING = "compiling",
+  FAILED = "failed",
+}
+
+export enum SubmissionLanguage {
+  CPP = "cpp",
+  PYTHON = "python",
+}
+
+export interface ISubmissionData {
+  testCaseId: string;
+  status: string;
+}
+
+export interface ISubmission extends Document {
+  code: string;
+  problemId: string;
+  language: SubmissionLanguage;
+  createdAt: Date;
+  updatedAt: Date;
+  status: SubmissionStatus;
+  submissionData: ISubmissionData;
+
+  // we can add user id later for multi user support
+}
+
+const submissionSchema = new mongoose.Schema<ISubmission>(
+  {
+    problemId: { type: String, required: [true, "Problem ID is required"] },
+    code: { type: String, required: [true, "Code is required"] },
+    language: {
+      type: String,
+      enum: Object.values(SubmissionLanguage),
+      required: [true, "Language is required"],
+    },
+    status: {
+      type: String,
+      enum: Object.values(SubmissionStatus),
+      default: SubmissionStatus.PENDING,
+    },
+    submissionData: {
+      type: Object,
+      required: true,
+      default: {},
+    },
+  },
+  {
+    timestamps: true,
+    toJSON: {
+      transform: (doc, record) => {
+        delete (record as any).__v;
+        record.id = record._id;
+        delete (record as any)._id;
+
+        return record;
+      },
+    },
+  },
+);
+
+submissionSchema.index({ problemId: 1, status: 1, createdAt: -1 });
+
+export const Submission = mongoose.model<ISubmission>(
+  "Submission",
+  submissionSchema,
+);

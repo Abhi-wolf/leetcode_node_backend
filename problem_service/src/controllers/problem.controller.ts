@@ -5,28 +5,6 @@ import { ProblemRepository } from "../repositories/problem.repository";
 const problemRepository = new ProblemRepository();
 const problemService = new ProblemService(problemRepository);
 
-export interface IProblemController {
-  createProblem(req: Request, res: Response, next: NextFunction): Promise<void>;
-  getProblemById(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void>;
-  getAllProblems(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void>;
-  updateProblem(req: Request, res: Response, next: NextFunction): Promise<void>;
-  deleteProblem(req: Request, res: Response, next: NextFunction): Promise<void>;
-  findByDifficulty(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void>;
-  searchProblems(req: Request, res: Response): Promise<void>;
-}
-
 export const ProblemController = {
   async createProblem(
     req: Request,
