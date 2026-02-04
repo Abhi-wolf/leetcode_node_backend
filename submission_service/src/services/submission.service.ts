@@ -63,7 +63,7 @@ export class SubmissionService implements ISubmissionService {
     });
 
     //   we can add jobId to submission db for tracking
-    logger.info("Submission job added to queue with job ID:", jobId);
+    logger.info(`Submission job added to queue with job ID: ${jobId}`);
 
     return submission;
   }
