@@ -11,7 +11,7 @@ export interface IProblem extends Document {
   difficulty: "easy" | "medium" | "hard";
   createdAt: Date;
   updatedAt: Date;
-  testCases: ITestCase[];
+  testcases: ITestCase[];
   tags?: string[]; // dp, graph, tree, etc.
   editorial?: string;
 }
@@ -30,6 +30,14 @@ const testCaseSchema = new mongoose.Schema<ITestCase>(
     },
   },
   {
+    toJSON: {
+      transform: (_, ret: any) => {
+        delete ret.__v;
+        ret.id = ret._id.toString();
+        delete ret._id;
+        return ret;
+      },
+    },
     // _id: false,   // if we don't want separate ids for test cases
   },
 );
@@ -60,7 +68,7 @@ const problemSchema = new mongoose.Schema<IProblem>(
       trim: true,
     },
 
-    testCases: [testCaseSchema],
+    testcases: [testCaseSchema],
   },
   {
     timestamps: true,

@@ -15,9 +15,17 @@ problemRouter.post(
   ProblemController.createProblem,
 );
 
-problemRouter.get("/:id", ProblemController.getProblemById);
+problemRouter.get(
+  "/difficulty/:difficulty",
+  validateRequestParams(findByDifficultySchema),
+  ProblemController.findByDifficulty,
+);
+
+problemRouter.get("/search", ProblemController.searchProblems);
 
 problemRouter.get("/", ProblemController.getAllProblems);
+
+problemRouter.get("/:id", ProblemController.getProblemById);
 
 problemRouter.put(
   "/:id",
@@ -26,13 +34,5 @@ problemRouter.put(
 );
 
 problemRouter.delete("/:id", ProblemController.deleteProblem);
-
-problemRouter.get(
-  "/difficulty/:difficulty",
-  validateRequestParams(findByDifficultySchema),
-  ProblemController.findByDifficulty,
-);
-
-problemRouter.get("/search", ProblemController.searchProblems);
 
 export default problemRouter;

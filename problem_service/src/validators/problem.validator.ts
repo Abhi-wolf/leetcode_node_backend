@@ -6,14 +6,12 @@ export const createProblemSchema = z.object({
   tags: z.array(z.string()).optional(),
   editorial: z.string().optional(),
   difficulty: z.enum(["easy", "medium", "hard"]),
-  testCases: z
-    .array(
-      z.object({
-        input: z.string(),
-        output: z.string(),
-      }),
-    )
-    .optional(),
+  testcases: z.array(
+    z.object({
+      input: z.string(),
+      output: z.string(),
+    }),
+  ),
 });
 
 export const updateProblemSchema = z.object({
@@ -22,7 +20,7 @@ export const updateProblemSchema = z.object({
   tags: z.array(z.string()).optional(),
   editorial: z.string().optional(),
   difficulty: z.enum(["easy", "medium", "hard"]).optional(),
-  testCases: z
+  testcases: z
     .array(
       z.object({
         input: z.string(),

@@ -114,6 +114,7 @@ export const ProblemController = {
 
   async searchProblems(req: Request, res: Response): Promise<void> {
     const query = req.query.q as string;
+
     const problems = await problemService.searchProblems(query);
 
     res.status(200).json({
