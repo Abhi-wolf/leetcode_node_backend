@@ -2,12 +2,7 @@ import mongoose, { Document } from "mongoose";
 
 export enum SubmissionStatus {
   PENDING = "pending",
-  ACCEPTED = "accepted",
-  WRONG_ANSWER = "wrong_answer",
-  TIME_LIMIT_EXCEEDED = "time_limit_exceeded",
-  RUNTIME_ERROR = "runtime_error",
-  COMPILING = "compiling",
-  FAILED = "failed",
+  COMPLETED = "completed",
 }
 
 export enum SubmissionLanguage {

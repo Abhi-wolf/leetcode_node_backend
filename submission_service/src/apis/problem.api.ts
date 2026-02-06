@@ -6,6 +6,7 @@ import logger from "../config/logger.config";
 export interface ITestCase {
   input: string;
   output: string;
+  id: string;
 }
 
 export interface IProblemDetails {

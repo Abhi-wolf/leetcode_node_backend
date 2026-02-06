@@ -34,7 +34,43 @@ app.listen(serverConfig.PORT, async () => {
     `Evaluation server is running on http://localhost:${serverConfig.PORT}`,
   );
   logger.info(`Press Ctrl+C to stop the server.`);
+
   await startWorkers();
 
   await pullAllImages();
+
+  // await testPyCode();
 });
+
+// async function testPyCode() {
+//   //   const pythoncode = `
+//   // x = 1
+//   // while True:
+//   //   x += 1
+//   //   print(x)
+//   //   if x > 10:
+//   //     break
+
+//   // print("Hello, World!")
+//   //   `;
+
+//   const cppcode = `
+// #include <iostream>
+// using namespace std;
+
+// int main() {
+//   int n;
+//   cin>>n;
+//   cout<<n*n;
+//   return 0;
+// }
+//   `;
+
+//   await runCode({
+//     code: cppcode,
+//     language: "cpp",
+//     timeout: 100000,
+//     imageName: "gcc:latest",
+//     input: "5",
+//   });
+// }
