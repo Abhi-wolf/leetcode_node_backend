@@ -8,6 +8,7 @@ import {
 import logger from "./config/logger.config";
 import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middleware";
 import { connectDB } from "./config/db.config";
+import morganMiddleware from "./middlewares/morgan.middleware";
 const app = express();
 
 app.use(express.json());
@@ -17,6 +18,8 @@ app.use(express.json());
  */
 
 app.use(attachCorrelationIdMiddleware);
+app.use(morganMiddleware);
+
 app.use("/api/v1", v1Router);
 
 /**

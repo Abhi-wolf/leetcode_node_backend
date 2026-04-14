@@ -1,33 +1,66 @@
 import winston from "winston";
-import { getCorrelationId } from "../utils/helpers/request.helpers";
 import DailyRotateFile from "winston-daily-rotate-file";
+import { serverConfig } from ".";
+import { getCorrelationId } from "../utils/helpers/request.helpers";
 
+const isProd = serverConfig.NODE_ENV === "production";
+
+// Structured Format (Production / File)
+const structuredFormat = winston.format.combine(
+  winston.format.timestamp(),
+  winston.format.errors({ stack: true }), // captures stack traces on Error objects
+  winston.format((info) => {
+    info.serviceName = serverConfig.SERVICE_NAME;
+    info.environment = serverConfig.NODE_ENV;
+    info.correlationId = getCorrelationId();
+    return info;
+  })(),
+  winston.format.json(),
+);
+
+// Dev Format (Console / Local)
+const devFormat = winston.format.combine(
+  winston.format.colorize(),
+  winston.format.timestamp({ format: "MM-DD-YYYY HH:mm:ss" }),
+  winston.format.printf(
+    ({ level, message, timestamp, correlationId, ...data }) => {
+      const extra = Object.keys(data).length
+        ? JSON.stringify(data, null, 2)
+        : "";
+      return `${timestamp} [${level}] ${message} ${extra}`;
+    },
+  ),
+);
+
+// ─── Logger ───────────────────────────────────────────────────────────────────
 const logger = winston.createLogger({
-    format: winston.format.combine(
-        winston.format.timestamp({ format: "MM-DD-YYYY HH:mm:ss"  }), // how the timestamp should be formatted
-        winston.format.json(), // Format the log message as JSON
-        // define a cutom print
-        winston.format.printf( ({  level, message, timestamp, ...data }) => {
-            const output = { 
-                level,
-                message, 
-                timestamp, 
-                correlationId: getCorrelationId(), 
-                data 
-            };
-            return JSON.stringify(output);
-        })
-    ),
-    transports: [
-        new winston.transports.Console(),
-        new DailyRotateFile({
-            filename: "logs/%DATE%-app.log", // The file name pattern
-            datePattern: "YYYY-MM-DD", // The date format
-            maxSize: "20m", // The maximum size of the log file
-            maxFiles: "14d", // The maximum number of log files to keep
-        })
-        // TODO: add logic to integrate and save logs in mongo
-    ]
+  level: isProd ? "info" : "debug", // suppress debug logs in prod
+  transports: [
+    // Console → structured in prod, pretty in dev (because in dev we often read logs directly from the console, while in prod they are consumed by log aggregators)
+    new winston.transports.Console({
+      format: isProd ? structuredFormat : devFormat,
+    }),
+
+    // TODO: remove this when we integrate with log aggregators like Grafana Loki, since they can directly consume logs from console in structured format, and we won't need to maintain log files on our server
+    // Rotating file → always structured JSON for log aggregators
+    new DailyRotateFile({
+      filename: "logs/%DATE%-app.log",
+      datePattern: "YYYY-MM-DD",
+      maxSize: "20m",
+      maxFiles: "14d",
+      format: structuredFormat,
+    }),
+
+    // Error-only file → easier to isolate failures
+    new DailyRotateFile({
+      filename: "logs/%DATE%-error.log",
+      datePattern: "YYYY-MM-DD",
+      level: "error",
+      maxSize: "20m",
+      maxFiles: "14d",
+      format: structuredFormat,
+    }),
+  ],
 });
 
 export default logger;
