@@ -1,38 +1,46 @@
 import express from "express";
-import { validateRequestBody, validateRequestParams } from "../../validators";
+import { validateQueryParams, validateRequestBody } from "../../validators";
 import {
   updateProblemSchema,
   createProblemSchema,
-  findByDifficultySchema,
+  searchProblemsSchema,
 } from "../../validators/problem.validator";
-import { ProblemController } from "../../controllers/problem.controller";
+import { ProblemFactory } from "../../factories/problem.factory";
 
+// Create a new router instance
 const problemRouter = express.Router();
 
+// Get problem controller instance from factory
+const problemController = ProblemFactory.getProblemController();
+
+// POST /problems - Create a new problem
 problemRouter.post(
   "/",
   validateRequestBody(createProblemSchema),
-  ProblemController.createProblem,
+  problemController.createProblem,
 );
 
+// GET /problems/search?q=query - Search problems by query
+// /api/v1/problems/search?difficulty=easy&q=square
+// /api/v1/problems/search?difficulty=easy&q=square&tags=array&tags=math
+// we can also add filters in query params like difficulty and tags and to get all problems
 problemRouter.get(
-  "/difficulty/:difficulty",
-  validateRequestParams(findByDifficultySchema),
-  ProblemController.findByDifficulty,
+  "/search",
+  validateQueryParams(searchProblemsSchema),
+  problemController.searchProblems,
 );
 
-problemRouter.get("/search", ProblemController.searchProblems);
+// GET /problems/:id - Get problem by ID
+problemRouter.get("/:id", problemController.getProblemById);
 
-problemRouter.get("/", ProblemController.getAllProblems);
-
-problemRouter.get("/:id", ProblemController.getProblemById);
-
+// PUT /problems/:id - Update problem by ID
 problemRouter.put(
   "/:id",
   validateRequestBody(updateProblemSchema),
-  ProblemController.updateProblem,
+  problemController.updateProblem,
 );
 
-problemRouter.delete("/:id", ProblemController.deleteProblem);
+// DELETE /problems/:id - Delete problem by ID
+problemRouter.delete("/:id", problemController.deleteProblem);
 
 export default problemRouter;

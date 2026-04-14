@@ -8,6 +8,7 @@ export enum SubmissionStatus {
 export enum SubmissionLanguage {
   CPP = "cpp",
   PYTHON = "python",
+  JS = "js",
 }
 
 export interface ISubmissionData {

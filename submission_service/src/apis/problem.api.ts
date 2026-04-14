@@ -32,6 +32,11 @@ export async function getProblemById(
 ): Promise<IProblemDetails | null> {
   // TODO:improve the axios api error handling
   try {
+    console.log(
+      "serverConfig.PROBLEM_SERVICE_URL",
+      serverConfig.PROBLEM_SERVICE_URL,
+    );
+
     const response: AxiosResponse<IProblemResponse> = await axios.get(
       `${serverConfig.PROBLEM_SERVICE_URL}/problems/${problemId}`,
     );

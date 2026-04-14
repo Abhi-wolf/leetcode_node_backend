@@ -1,104 +1,113 @@
-import { NextFunction, Request, Response } from "express";
-import { ProblemService } from "../services/problem.service";
-import { ProblemRepository } from "../repositories/problem.repository";
+import { Request, Response } from "express";
+import { IProblemService } from "../services/problem.service";
+import { ProblemDifficultyLevel } from "../models/problem.model";
 
-const problemRepository = new ProblemRepository();
-const problemService = new ProblemService(problemRepository);
+export class ProblemController {
+  private problemService: IProblemService;
 
-export const ProblemController = {
-  async createProblem(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    const problem = await problemService.createProblem(req.body);
+  /*
+    Constructor to initialize the ProblemController with a ProblemService instance
+   */
+  constructor(problemService: IProblemService) {
+    this.problemService = problemService;
+  }
+
+  /**
+   * Creates a new problem
+   * @param {Request} req - The request object containing the problem data in the body
+   * @param {Response} res - The response object to send the response
+   */
+  createProblem = async (req: Request, res: Response): Promise<void> => {
+    const problem = await this.problemService.createProblem(req.body);
 
     res.status(201).json({
       success: true,
       message: "Problem created successfully",
       data: problem,
     });
-  },
+  };
 
-  async getProblemById(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    const problem = await problemService.getProblemById(req.params.id);
+  /**
+   * Finds a problem by its ID
+   * @param {Request} req - The request object containing the problem ID in the params
+   * @param {Response} res - The response object to send the response
+   */
+  getProblemById = async (req: Request, res: Response): Promise<void> => {
+    const problem = await this.problemService.getProblemById(req.params.id);
 
     res.status(200).json({
       success: true,
       message: "Problem fetched successfully",
       data: problem,
     });
-  },
+  };
 
-  async getAllProblems(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    const { problems, total } = await problemService.getAllProblems();
-
-    res.status(200).json({
-      success: true,
-      message: "Problems fetched successfully",
-      data: { problems, total },
-    });
-  },
-
-  async updateProblem(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    const problem = await problemService.updateProblem(req.params.id, req.body);
+  /**
+   * Updates a problem by its ID
+   * @param {Request} req - The request object containing the problem ID in the params and the update data in the body
+   * @param {Response} res - The response object to send the response
+   */
+  updateProblem = async (req: Request, res: Response): Promise<void> => {
+    const problem = await this.problemService.updateProblem(
+      req.params.id,
+      req.body,
+    );
 
     res.status(200).json({
       success: true,
       message: "Problem updated successfully",
       data: problem,
     });
-  },
+  };
 
-  async deleteProblem(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    await problemService.deleteProblem(req.params.id);
+  /**
+   * Deletes a problem by its ID
+   * @param {Request} req - The request object containing the problem ID in the params
+   * @param {Response} res - The response object to send the response
+   */
+  deleteProblem = async (req: Request, res: Response): Promise<void> => {
+    await this.problemService.deleteProblem(req.params.id);
 
     res.status(200).json({
       success: true,
       message: "Problem deleted successfully",
     });
-  },
+  };
 
-  async findByDifficulty(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    const difficulty = req.params.difficulty as "easy" | "medium" | "hard";
-    const problems = await problemService.findByDifficulty(difficulty);
-
-    res.status(200).json({
-      success: true,
-      message: "Problems fetched successfully",
-      data: problems,
-    });
-  },
-
-  async searchProblems(req: Request, res: Response): Promise<void> {
+  /**
+   * Finds all problems by their difficulty level
+   * @param {Request} req - The request object containing the search query in the query parameters
+   * @param {Response} res - The response object to send the response
+   */
+  searchProblems = async (req: Request, res: Response): Promise<void> => {
     const query = req.query.q as string;
 
-    const problems = await problemService.searchProblems(query);
+    // Parse limit and offset from query parameters (base 10),
+    const limit = req.query.limit
+      ? parseInt(req.query.limit as string, 10)
+      : undefined;
+    const page = req.query.page
+      ? parseInt(req.query.page as string, 10)
+      : undefined;
+
+    const difficulty = req.query.difficulty as
+      | ProblemDifficultyLevel
+      | undefined;
+
+    const tags = req.query.tags as string[] | undefined;
+
+    const problems = await this.problemService.searchProblems(
+      limit,
+      page,
+      query,
+      difficulty,
+      tags,
+    );
 
     res.status(200).json({
       success: true,
       message: "Problems fetched successfully",
       data: problems,
     });
-  },
-};
+  };
+}

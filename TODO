@@ -1,0 +1,24 @@
+
+Todo:
+
+MAJOR REQUIREMENTS:
+  // minimize the payload by removing what's not needed
+  ☐ category filteration and pagination (in get all problems)
+  ☐ Authentication and authorization (using JWT) Authentication microservice
+  ☐ API gateway and service discovery (JWT verification can be done at API gateway level itself) API gateway microservice
+  
+  // check if sanitization is needed here or not
+  // this can be like multi level comments
+  ☐ solutions (where users can share there solutions)  
+  ☐ add javascript and java 
+  ☐ run code vs submit code
+  
+Extra Features:
+  ☐ add comments and discussions (where users can ask doubts and discuss about the problem)
+
+
+ADVANCE REQUIREMENTS:
+  ☐ competitions
+  ☐ live leaderboard
+  ☐ find where cache can be used 
+  ☐ use grafana/loki for logging and monitoring

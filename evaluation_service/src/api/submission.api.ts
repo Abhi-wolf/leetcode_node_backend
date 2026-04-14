@@ -9,7 +9,13 @@ export async function updateSubmission(
   output: Record<string, string>,
 ) {
   try {
-    const url = `${serverConfig.SUBMISSION_SERVICE}/submissions/${submissionId}/status`;
+    console.log("Updating submission", { submissionId, status, output });
+    console.log(
+      "serverConfig.SUBMISSION_SERVICE_URL",
+      serverConfig.SUBMISSION_SERVICE_URL,
+    );
+
+    const url = `${serverConfig.SUBMISSION_SERVICE_URL}/submissions/${submissionId}/status`;
     logger.info("Getting problem by ID", { url });
     const response = await axios.patch(url, {
       status,

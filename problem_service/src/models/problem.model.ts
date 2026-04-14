@@ -5,10 +5,16 @@ export interface ITestCase {
   output: string;
 }
 
+export enum ProblemDifficultyLevel {
+  EASY = "easy",
+  MEDIUM = "medium",
+  HARD = "hard",
+}
+
 export interface IProblem extends Document {
   title: string;
   description: string;
-  difficulty: "easy" | "medium" | "hard";
+  difficulty: ProblemDifficultyLevel;
   createdAt: Date;
   updatedAt: Date;
   testcases: ITestCase[];
@@ -21,11 +27,13 @@ const testCaseSchema = new mongoose.Schema<ITestCase>(
     input: {
       type: String,
       required: [true, "Input is required"],
+      maxLength: [5000, "Input cannot exceed 5000 characters"],
       trim: true,
     },
     output: {
       type: String,
       required: [true, "Output is required"],
+      maxLength: [5000, "Output cannot exceed 5000 characters"],
       trim: true,
     },
   },
@@ -54,11 +62,12 @@ const problemSchema = new mongoose.Schema<IProblem>(
       type: String,
       required: [true, "Description is required"],
       trim: true,
+      maxLength: [5000, "Description cannot exceed 5000 characters"],
     },
     difficulty: {
       type: String,
       enum: {
-        values: ["easy", "medium", "hard"],
+        values: Object.values(ProblemDifficultyLevel),
         message: "Invalid difficulty level",
       },
       required: [true, "Difficulty is required"],
@@ -66,8 +75,12 @@ const problemSchema = new mongoose.Schema<IProblem>(
     editorial: {
       type: String,
       trim: true,
+      maxLength: [5000, "Editorial cannot exceed 5000 characters"],
     },
-
+    tags: {
+      type: [String],
+      trim: true,
+    },
     testcases: [testCaseSchema],
   },
   {

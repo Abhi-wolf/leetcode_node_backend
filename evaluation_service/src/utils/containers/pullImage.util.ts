@@ -1,6 +1,6 @@
 import Docker from "dockerode";
 import logger from "../../config/logger.config";
-import { CPP_IMAGE, PYTHON_IMAGE } from "../constants";
+import { CPP_IMAGE, NODE_IMAGE, PYTHON_IMAGE } from "../constants";
 
 export async function pullImage(imageName: string) {
   const docker = new Docker();
@@ -13,8 +13,10 @@ export async function pullImage(imageName: string) {
 
       function onFinished(err: any, output: any) {
         if (err) {
+          console.log(`Error pulling image ${imageName}:`, err);
           reject(err);
         } else {
+          console.log(`Image ${imageName} pulled successfully.`);
           resolve(output);
         }
       }
@@ -27,11 +29,12 @@ export async function pullImage(imageName: string) {
 }
 
 export async function pullAllImages() {
-  const images = [PYTHON_IMAGE, CPP_IMAGE];
+  const images = [NODE_IMAGE, PYTHON_IMAGE, CPP_IMAGE];
 
   const pullPromises = images.map((image) => pullImage(image));
 
   try {
+    logger.info("Pulling images at the start of the server...");
     await Promise.all(pullPromises);
     logger.info("All images pulled successfully");
   } catch (error) {

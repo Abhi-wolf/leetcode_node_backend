@@ -3,7 +3,7 @@ import { createNewDockerContainer } from "./createContainer.util";
 
 export interface RunCodeOptions {
   code: string;
-  language: "python" | "cpp"; // e.g., "python", "javascript", etc.
+  language: "python" | "cpp" | "js"; // e.g., "python", "javascript", etc.
   timeout?: number; // in milliseconds
   imageName: string;
   input: string; // Optional input for the code
@@ -27,6 +27,7 @@ export async function runCode(options: RunCodeOptions) {
     container?.kill();
   }, timeout);
 
+  // TODO  : add check when container not created
   console.log("Container created successfully:", container?.id);
 
   await container?.start();
