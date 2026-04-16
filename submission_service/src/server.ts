@@ -9,6 +9,7 @@ import logger from "./config/logger.config";
 import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middleware";
 import { connectDB } from "./config/db.config";
 import morganMiddleware from "./middlewares/morgan.middleware";
+import { startStatusUpdateWorkers } from "./workers/status-update.worker";
 const app = express();
 
 app.use(express.json());
@@ -30,9 +31,8 @@ app.use(appErrorHandler);
 app.use(genericErrorHandler);
 
 app.listen(serverConfig.PORT, async () => {
-  logger.info(
-    `Submission service is running on http://localhost:${serverConfig.PORT}`,
-  );
-  logger.info(`Press Ctrl+C to stop the server.`);
   await connectDB();
+  await startStatusUpdateWorkers();
+
+  logger.info(`Submission service is running on ${serverConfig.PORT}`);
 });

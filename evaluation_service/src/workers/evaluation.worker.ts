@@ -10,40 +10,10 @@ import {
 } from "../interfaces/evaluation.interface";
 import { runCode } from "../utils/containers/codeRunner.util";
 import { LANGUAGE_CONFIG } from "../config/language.config";
-import { updateSubmission } from "../api/submission.api";
 import { serverConfig } from "../config";
 import { asyncLocalStorage } from "../utils/helpers/request.helpers";
+import { addStatusUpdateJob } from "../producers/status-update.producer";
 
-// function matchTestCasesWithResults(
-//   testCases: TestCase[],
-//   results: EvaluationResult[],
-// ) {
-//   const output: Record<string, string> = {};
-
-//   if (results.length !== testCases.length) {
-//     logger.error("Number of results does not match number of test cases");
-//     return output;
-//   }
-
-//   testCases?.map((testCase, index) => {
-//     let retval = "";
-
-//     if (results[index].status === "time_limit_exceeded") {
-//       retval = "TLE";
-//     } else if (results[index].status === "failed") {
-//       retval = "ERROR";
-//     } else {
-//       if (results[index].output === testCase.output) {
-//         retval = "AC";
-//       } else {
-//         retval = "WA";
-//       }
-//     }
-//     output[testCase.id] = retval;
-//   });
-
-//   return output;
-// }
 
 function matchTestCasesWithResults(
   testCases: TestCase[],
@@ -71,8 +41,8 @@ function matchTestCasesWithResults(
     } else if (result.status === "failed") {
       output[testCase.id] = {
         testCaseId: testCase.id,
-        status: EvaluationStatus.COMPILATION_ERROR, // Runtime Error
-        errorMessage: result.errorMessage || "Runtime error",
+        status: EvaluationStatus.COMPILATION_ERROR,
+        errorMessage: result.errorMessage || "Compilation error",
         actualOutput: result.output,
         expectedOutput: testCase.output,
         executionTime: result.executionTime || 0,
@@ -135,11 +105,18 @@ async function setupEvaluationWorker() {
                 testCasesRunnerResults,
               );
 
-              await updateSubmission(
-                data.submissionId,
-                "completed",
-                output || {},
-              );
+              // await updateSubmission(
+              //   data.submissionId,
+              //   "completed",
+              //   output || {},
+              // );
+
+              await addStatusUpdateJob({
+                submissionId: data.submissionId,
+                status: "completed",
+                output: output || {},
+              });
+
             } catch (error) {
               logger.error(`Error processing job ${job.id}:`, error);
               return;
@@ -150,6 +127,7 @@ async function setupEvaluationWorker() {
     },
     {
       connection: createNewRedisConnection(),
+      concurrency: 2, // Process 2 jobs concurrently
     },
   );
 
@@ -162,6 +140,6 @@ async function setupEvaluationWorker() {
   });
 }
 
-export async function startWorkers() {
+export async function startEvaluationWorkers() {
   await setupEvaluationWorker();
 }

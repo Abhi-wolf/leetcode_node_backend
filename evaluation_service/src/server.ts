@@ -7,7 +7,7 @@ import {
 } from "./middlewares/error.middleware";
 import logger from "./config/logger.config";
 import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middleware";
-import { startWorkers } from "./workers/evaluation.worker";
+import { startEvaluationWorkers } from "./workers/evaluation.worker";
 import { pullAllImages } from "./utils/containers/pullImage.util";
 import morganMiddleware from "./middlewares/morgan.middleware";
 const app = express();
@@ -31,12 +31,8 @@ app.use(appErrorHandler);
 app.use(genericErrorHandler);
 
 app.listen(serverConfig.PORT, async () => {
-  logger.info(
-    `Evaluation server is running on http://localhost:${serverConfig.PORT}`,
-  );
-
-  logger.info(`Press Ctrl+C to stop the server.`);
-
-  await startWorkers();
+  await startEvaluationWorkers();
   await pullAllImages();
+
+  logger.info(`Evaluation server is running on ${serverConfig.PORT}`);
 });

@@ -57,5 +57,4 @@ export async function getProblemById(
     return null;
   }
 
-  return null;
 }

@@ -8,7 +8,7 @@ export enum EvaluationStatus {
   SUCCESS = "AC",
   FAILED = "WA",
   TIME_LIMIT_EXCEEDED = "TLE",
-  COMPILATION_ERROR = "RTE",
+  COMPILATION_ERROR = "CE",
 }
 
 export interface Problem {

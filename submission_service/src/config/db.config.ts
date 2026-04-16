@@ -5,7 +5,12 @@ import { serverConfig } from ".";
 export const connectDB = async () => {
   try {
     const dbUrl = serverConfig.DB_URI;
-    await mongoose.connect(dbUrl);
+    await mongoose.connect(dbUrl, {
+      maxPoolSize: 20,
+      minPoolSize: 5,
+      serverSelectionTimeoutMS: 5000, // fail fast 
+      socketTimeoutMS: 45000, // allow time for long operations
+    });
 
     logger.info("Connected to the database");
 

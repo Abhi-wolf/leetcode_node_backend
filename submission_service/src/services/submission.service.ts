@@ -8,7 +8,6 @@ import {
 import { addSubmissionJob } from "../producers/submission.producer";
 import { ISubmissionRepository } from "../repositories/submission.repository";
 import { BadRequestError, NotFoundError } from "../utils/errors/app.error";
-import { getCorrelationId } from "../utils/helpers/request.helpers";
 
 export interface ISubmissionService {
   createSubmission(submissionData: Partial<ISubmission>): Promise<ISubmission>;
@@ -43,6 +42,7 @@ export class SubmissionService implements ISubmissionService {
       throw new BadRequestError(`Language is required`);
     }
 
+    // get problem details from problem service
     const problem = await getProblemById(submissionData.problemId);
 
     logger.info("fetched problem from problem service: ", problem?.id);
@@ -63,7 +63,6 @@ export class SubmissionService implements ISubmissionService {
       problem,
       code: submissionData.code,
       language: submissionData.language,
-      correlationId: getCorrelationId(),
     });
 
     //   we can add jobId to submission db for tracking

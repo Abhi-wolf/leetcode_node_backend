@@ -9,6 +9,8 @@ type ServerConfig = {
   PROBLEM_SERVICE_URL: string;
   EVALUATION_JOB_NAME: string;
   SUBMISSION_QUEUE_NAME: string;
+  STATUS_UPDATE_QUEUE_NAME: string;
+  STATUS_UPDATE_JOB_NAME: string;
 };
 
 function loadEnv() {
@@ -25,6 +27,13 @@ export const serverConfig: ServerConfig = {
   EVALUATION_JOB_NAME: process.env.EVALUATION_JOB_NAME || "evaluate-submission",
   SUBMISSION_QUEUE_NAME:
     process.env.SUBMISSION_QUEUE_NAME || "submission_queue",
+  
+  STATUS_UPDATE_QUEUE_NAME:
+    process.env.STATUS_UPDATE_QUEUE_NAME || "status_update_queue",
+  
+  STATUS_UPDATE_JOB_NAME:
+    process.env.STATUS_UPDATE_JOB_NAME || "update-submission-status",
+
   DB_URI:
     process.env.DB_URI ||
     "mongodb://localhost:27017/leetcode_submission_service",

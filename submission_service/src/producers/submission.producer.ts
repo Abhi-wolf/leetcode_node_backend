@@ -3,29 +3,41 @@ import { serverConfig } from "../config";
 import logger from "../config/logger.config";
 import { SubmissionLanguage } from "../models/submission.model";
 import { submissionQueue } from "../queues/submission.queue";
+import { getCorrelationId } from "../utils/helpers/request.helpers";
 
 export interface ISubmissionJob {
   submissionId: string;
   problem: IProblemDetails;
   code: string;
   language: SubmissionLanguage;
-  correlationId:string
 }
 
 export async function addSubmissionJob(
   data: ISubmissionJob,
 ): Promise<string | null> {
   try {
+    const correlationId = getCorrelationId();
+
+    const jobData = {
+      ...data,
+      correlationId: correlationId,
+    };
+
     const job = await submissionQueue.add(
       serverConfig.EVALUATION_JOB_NAME,
-      data,
+      jobData,
     );
 
-    logger.info(`Added submission job with ID: ${job.id}`);
+    logger.info(
+      `Added submission job with ID: ${job.id} for submission ID: ${data.submissionId}`,
+    );
 
     return job.id || null;
   } catch (error) {
-    logger.error("Failed to add submission job", error);
+    logger.error(
+      `Failed to add submission job for submission ID: ${data.submissionId}, error:`,
+      error,
+    );
     return null;
   }
 }

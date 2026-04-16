@@ -9,6 +9,8 @@ type ServerConfig = {
   SUBMISSION_SERVICE_URL: string;
   EVALUATION_JOB_NAME: string;
   SUBMISSION_QUEUE_NAME: string;
+  STATUS_UPDATE_QUEUE_NAME: string;
+  STATUS_UPDATE_JOB_NAME: string;
 };
 
 function loadEnv() {
@@ -25,6 +27,13 @@ export const serverConfig: ServerConfig = {
   EVALUATION_JOB_NAME: process.env.EVALUATION_JOB_NAME || "evaluate-submission",
   SUBMISSION_QUEUE_NAME:
     process.env.SUBMISSION_QUEUE_NAME || "submission_queue",
+
+  STATUS_UPDATE_QUEUE_NAME:
+    process.env.STATUS_UPDATE_QUEUE_NAME || "status_update_queue",
+
+  STATUS_UPDATE_JOB_NAME:
+    process.env.STATUS_UPDATE_JOB_NAME || "update-submission-status",
+
   PROBLEM_SERVICE_URL:
     process.env.PROBLEM_SERVICE_URL || "http://localhost:3001/api/v1",
   SUBMISSION_SERVICE_URL:
