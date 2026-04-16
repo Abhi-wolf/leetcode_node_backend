@@ -13,14 +13,12 @@ export async function ensureImage(
 ): Promise<void> {
   try {
     // Check if image already exists
-    console.log(`Checking if image ${image} exists...`);
-
     await docker.getImage(image).inspect();
     return;
   } catch (error: any) {
     // If error is NOT "image not found", rethrow
 
-    console.log(`Image ${image} not found locally. Pulling from registry...`);
+    logger.info(`Image ${image} not found locally. Pulling from registry...`);
     if (error?.statusCode !== 404) {
       throw error;
     }
@@ -37,17 +35,17 @@ export async function ensureImage(
         stream,
         (pullErr: Error | null) => {
           if (pullErr) {
-            console.log(`Error pulling image ${image}:`, pullErr);
+            logger.error(`Error pulling image ${image}:`, pullErr);
             return reject(pullErr);
           }
 
-          console.log(`Image ${image} pulled successfully.`);
+          logger.info(`Image ${image} pulled successfully.`);
           resolve();
         },
         (event: any) => {
           // Optional: you can log progress here
           // console.log(event);
-          console.log("image pull event status", event.status);
+          logger.info("image pull event status", event.status);
         },
       );
     });
@@ -60,10 +58,6 @@ export async function createNewDockerContainer(
   // Implementation for creating a new Docker container
 
   try {
-    // const docker = new Docker();
-
-    console.log("Creating Docker container with options:", options);
-
     const docker = new Docker({
       host: "dind",
       port: 2375,
@@ -87,8 +81,6 @@ export async function createNewDockerContainer(
         NetworkMode: "none", // disable networking for security
       },
     });
-
-    console.log("Container created with ID:", container.id);
 
     return container;
   } catch (error) {

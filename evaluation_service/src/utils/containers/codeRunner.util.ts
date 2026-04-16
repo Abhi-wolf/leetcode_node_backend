@@ -1,3 +1,4 @@
+import logger from "../../config/logger.config";
 import { commands } from "./commands.util";
 import { createNewDockerContainer } from "./createContainer.util";
 
@@ -10,8 +11,6 @@ export interface RunCodeOptions {
 }
 
 export async function runCode(options: RunCodeOptions) {
-  console.log("Running code with options:", options);
-
   const { code, language, timeout, imageName, input } = options;
 
   const container = await createNewDockerContainer({
@@ -22,19 +21,17 @@ export async function runCode(options: RunCodeOptions) {
 
   let isTimeLimitExceeded = false;
   const timeLimitExceeded = setTimeout(() => {
-    console.log("Time limit exceeded. Stopping the container...");
+    logger.info("Time limit exceeded. Stopping the container...");
     isTimeLimitExceeded = true;
     container?.kill();
   }, timeout);
 
   // TODO  : add check when container not created
-  console.log("Container created successfully:", container?.id);
+  logger.info(`Container created successfully with ID: ${container?.id}`);
 
   await container?.start();
 
   const status = await container?.wait();
-
-  console.log("Container exi6982c0ce3e837cfa0a8f1c45ted with status:", status);
 
   if (isTimeLimitExceeded) {
     await container?.remove();
@@ -49,8 +46,6 @@ export async function runCode(options: RunCodeOptions) {
     stderr: true,
   });
 
-  console.log("Container logs: ", logs?.toString());
-
   const containerLogs = processLogs(logs);
 
   await container?.remove();
@@ -58,13 +53,13 @@ export async function runCode(options: RunCodeOptions) {
   clearTimeout(timeLimitExceeded);
 
   if (status?.StatusCode === 0) {
-    console.log("Code executed successfully.");
+    logger.info("Code executed successfully.");
     return {
       status: "success",
       output: containerLogs,
     };
   } else {
-    console.log("Code execution failed.");
+    logger.info("Code execution failed.", { containerLogs });
     return {
       status: "failed",
       output: containerLogs,

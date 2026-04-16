@@ -18,6 +18,6 @@ submissionQueue.on("error", (error) => {
   logger.error("Submission Queue Error:", error);
 });
 
-submissionQueue.on("waiting", (jobId) => {
-  logger.info(`Job ${jobId} is waiting to be processed`);
-});
+// submissionQueue.on("waiting", (job) => {
+//   logger.info(`Job ${job.id} is waiting to be processed`);
+// });

@@ -14,7 +14,10 @@ export class SubmissionController {
     res: Response,
     next: NextFunction,
   ) => {
-    logger.info("Creating new submission", { body: req.body });
+    logger.info("Creating new submission", {
+      problemId: req.body.problemId,
+      language: req.body.language,
+    });
 
     const submission = await this.submissionService.createSubmission(req.body);
 
@@ -100,7 +103,6 @@ export class SubmissionController {
     logger.info("Updating submission status", {
       submissionId: id,
       status,
-      submissionData,
     });
 
     const submission = await this.submissionService.updateSubmissionStatus(

@@ -10,6 +10,7 @@ import { runCode } from "../utils/containers/codeRunner.util";
 import { LANGUAGE_CONFIG } from "../config/language.config";
 import { updateSubmission } from "../api/submission.api";
 import { serverConfig } from "../config";
+import { asyncLocalStorage } from "../utils/helpers/request.helpers";
 
 function matchTestCasesWithResults(
   testCases: TestCase[],
@@ -46,44 +47,47 @@ async function setupEvaluationWorker() {
   const worker = new Worker(
     serverConfig.SUBMISSION_QUEUE_NAME,
     async (job) => {
-      // Only process evaluation jobs in this worker
-      if (job.name === serverConfig.EVALUATION_JOB_NAME) {
-        logger.info(`Processing job ${job.id}`);
-        const data: EvaluationJob = job.data;
+      return asyncLocalStorage.run(
+        { correlationId: job.data.correlationId },
+        async () => {
+          // Only process evaluation jobs in this worker
+          if (job.name === serverConfig.EVALUATION_JOB_NAME) {
+            logger.info(`Processing job ${job.id}`);
+            const data: EvaluationJob = job.data;
 
-        console.log("Evaluation job data", data.problem.testcases[0]);
+            try {
+              const testCasesRunnerPormises = data.problem.testcases.map(
+                (testCase) => {
+                  return runCode({
+                    code: data.code,
+                    language: data.language,
+                    timeout: LANGUAGE_CONFIG[data.language].timeout,
+                    imageName: LANGUAGE_CONFIG[data.language].imageName,
+                    input: testCase.input,
+                  });
+                },
+              );
 
-        try {
-          const testCasesRunnerPormises = data.problem.testcases.map(
-            (testCase) => {
-              return runCode({
-                code: data.code,
-                language: data.language,
-                timeout: LANGUAGE_CONFIG[data.language].timeout,
-                imageName: LANGUAGE_CONFIG[data.language].imageName,
-                input: testCase.input,
-              });
-            },
-          );
+              const testCasesRunnerResults: EvaluationResult[] =
+                await Promise.all(testCasesRunnerPormises);
 
-          const testCasesRunnerResults: EvaluationResult[] = await Promise.all(
-            testCasesRunnerPormises,
-          );
+              const output = matchTestCasesWithResults(
+                data.problem.testcases,
+                testCasesRunnerResults,
+              );
 
-          console.log("testCasesRunnerResults", testCasesRunnerResults);
-
-          const output = matchTestCasesWithResults(
-            data.problem.testcases,
-            testCasesRunnerResults,
-          );
-
-          console.log("output", output);
-          await updateSubmission(data.submissionId, "completed", output || {});
-        } catch (error) {
-          logger.error(`Error processing job ${job.id}:`, error);
-          return;
-        }
-      }
+              await updateSubmission(
+                data.submissionId,
+                "completed",
+                output || {},
+              );
+            } catch (error) {
+              logger.error(`Error processing job ${job.id}:`, error);
+              return;
+            }
+          }
+        },
+      );
     },
     {
       connection: createNewRedisConnection(),

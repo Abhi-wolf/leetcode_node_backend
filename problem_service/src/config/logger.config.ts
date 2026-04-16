@@ -22,14 +22,11 @@ const structuredFormat = winston.format.combine(
 const devFormat = winston.format.combine(
   winston.format.colorize(),
   winston.format.timestamp({ format: "MM-DD-YYYY HH:mm:ss" }),
-  winston.format.printf(
-    ({ level, message, timestamp, correlationId, ...data }) => {
-      const extra = Object.keys(data).length
-        ? JSON.stringify(data, null, 2)
-        : "";
-      return `${timestamp} [${level}] ${message} ${extra}`;
-    },
-  ),
+  winston.format.printf(({ level, message, timestamp, ...data }) => {
+    const extra = Object.keys(data).length ? JSON.stringify(data, null, 2) : "";
+    const correlationId = getCorrelationId();
+    return `${timestamp} [${level}] ${correlationId} ${message} ${extra}`;
+  }),
 );
 
 // ─── Logger ───────────────────────────────────────────────────────────────────

@@ -2,6 +2,7 @@ import axios from "axios";
 import { serverConfig } from "../config";
 import { InternalServerError } from "../utils/errors/app.error";
 import logger from "../config/logger.config";
+import { getCorrelationId } from "../utils/helpers/request.helpers";
 
 export async function updateSubmission(
   submissionId: string,
@@ -9,23 +10,28 @@ export async function updateSubmission(
   output: Record<string, string>,
 ) {
   try {
-    console.log("Updating submission", { submissionId, status, output });
-    console.log(
-      "serverConfig.SUBMISSION_SERVICE_URL",
-      serverConfig.SUBMISSION_SERVICE_URL,
-    );
+    const correlationId = getCorrelationId();
+
+    logger.info("Updating submission", { submissionId, status });
 
     const url = `${serverConfig.SUBMISSION_SERVICE_URL}/submissions/${submissionId}/status`;
-    logger.info("Getting problem by ID", { url });
-    const response = await axios.patch(url, {
-      status,
-      submissionData: output,
-    });
+
+    const response = await axios.patch(
+      url,
+      {
+        status,
+        submissionData: output,
+      },
+      {
+        headers: {
+          "x-correlation-id": correlationId,
+        },
+      },
+    );
 
     if (response.status !== 200) {
       throw new InternalServerError("Failed to update submission");
     }
-    console.log("Submission updated successfully", response.data);
     return;
   } catch (error) {
     logger.error(`Failed to update submission: ${error}`);

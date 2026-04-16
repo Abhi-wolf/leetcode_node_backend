@@ -9,6 +9,7 @@ export interface ISubmissionJob {
   problem: IProblemDetails;
   code: string;
   language: SubmissionLanguage;
+  correlationId:string
 }
 
 export async function addSubmissionJob(

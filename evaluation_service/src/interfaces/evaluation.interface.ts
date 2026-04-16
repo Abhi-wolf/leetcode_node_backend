@@ -19,6 +19,7 @@ export interface EvaluationJob {
   code: string;
   language: "python" | "cpp";
   problem: Problem;
+  correlationId:string
 }
 
 export interface EvaluationResult {

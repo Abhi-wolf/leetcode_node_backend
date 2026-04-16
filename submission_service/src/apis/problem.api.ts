@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { serverConfig } from "../config";
 import { InternalServerError } from "../utils/errors/app.error";
 import logger from "../config/logger.config";
+import { getCorrelationId } from "../utils/helpers/request.helpers";
 
 export interface ITestCase {
   input: string;
@@ -32,13 +33,16 @@ export async function getProblemById(
 ): Promise<IProblemDetails | null> {
   // TODO:improve the axios api error handling
   try {
-    console.log(
-      "serverConfig.PROBLEM_SERVICE_URL",
-      serverConfig.PROBLEM_SERVICE_URL,
-    );
+    const correlationId = getCorrelationId();
+    logger.info("Fetching problem by ID", { problemId });
 
     const response: AxiosResponse<IProblemResponse> = await axios.get(
       `${serverConfig.PROBLEM_SERVICE_URL}/problems/${problemId}`,
+      {
+        headers: {
+          "x-correlation-id": correlationId,
+        },
+      },
     );
 
     if (response.data.success) {
