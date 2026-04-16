@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import {  Request, Response } from "express";
 import logger from "../config/logger.config";
 import { SubmissionService } from "../services/submission.service";
 
@@ -9,11 +9,7 @@ export class SubmissionController {
     this.submissionService = submissionService;
   }
 
-  createSubmission = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
+  createSubmission = async (req: Request, res: Response) => {
     logger.info("Creating new submission", {
       problemId: req.body.problemId,
       language: req.body.language,
@@ -32,11 +28,7 @@ export class SubmissionController {
     });
   };
 
-  getSubmissionById = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
+  getSubmissionById = async (req: Request, res: Response) => {
     const { id } = req.params;
     logger.info("Fetching submission by ID", { submissionId: id });
 
@@ -51,11 +43,7 @@ export class SubmissionController {
     });
   };
 
-  getSubmissionsByProblemId = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
+  getSubmissionsByProblemId = async (req: Request, res: Response) => {
     const { problemId } = req.params;
     logger.info("Fetching submissions by problem ID", { problemId });
 
@@ -74,11 +62,7 @@ export class SubmissionController {
     });
   };
 
-  deleteSubmissionById = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
+  deleteSubmissionById = async (req: Request, res: Response) => {
     const { id } = req.params;
     logger.info("Deleting submission", { submissionId: id });
 
@@ -92,11 +76,7 @@ export class SubmissionController {
     });
   };
 
-  updateSubmissionStatus = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
+  updateSubmissionStatus = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { status, submissionData } = req.body;
 

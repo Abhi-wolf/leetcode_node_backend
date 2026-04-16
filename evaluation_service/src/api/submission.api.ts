@@ -3,11 +3,12 @@ import { serverConfig } from "../config";
 import { InternalServerError } from "../utils/errors/app.error";
 import logger from "../config/logger.config";
 import { getCorrelationId } from "../utils/helpers/request.helpers";
+import { ISubmissionData } from "../interfaces/evaluation.interface";
 
 export async function updateSubmission(
   submissionId: string,
   status: string,
-  output: Record<string, string>,
+  output: Record<string, ISubmissionData>,
 ) {
   try {
     const correlationId = getCorrelationId();

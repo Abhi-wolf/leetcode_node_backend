@@ -14,6 +14,10 @@ export enum SubmissionLanguage {
 export interface ISubmissionData {
   testCaseId: string;
   status: string;
+  errorMessage?: string;
+  actualOutput?: string;
+  expectedOutput?: string;
+  executionTime?: number;
 }
 
 export interface ISubmission extends Document {

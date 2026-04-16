@@ -12,6 +12,7 @@ export interface RunCodeOptions {
 
 export async function runCode(options: RunCodeOptions) {
   const { code, language, timeout, imageName, input } = options;
+  const startTime = Date.now();
 
   const container = await createNewDockerContainer({
     imageName: imageName,
@@ -57,12 +58,16 @@ export async function runCode(options: RunCodeOptions) {
     return {
       status: "success",
       output: containerLogs,
+      executionTime: (Date.now() - startTime) / 1000, // in seconds
     };
   } else {
+    console.error("Code execution failed with status code:", containerLogs);
     logger.info("Code execution failed.", { containerLogs });
     return {
       status: "failed",
-      output: containerLogs,
+      output: "",
+      errorMessage: containerLogs,
+      executionTime: (Date.now() - startTime) / 1000,
     };
   }
 }

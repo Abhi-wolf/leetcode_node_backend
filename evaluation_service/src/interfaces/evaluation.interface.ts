@@ -4,6 +4,13 @@ export interface TestCase {
   output: string;
 }
 
+export enum EvaluationStatus {
+  SUCCESS = "AC",
+  FAILED = "WA",
+  TIME_LIMIT_EXCEEDED = "TLE",
+  COMPILATION_ERROR = "RTE",
+}
+
 export interface Problem {
   id: string;
   title: string;
@@ -19,10 +26,21 @@ export interface EvaluationJob {
   code: string;
   language: "python" | "cpp";
   problem: Problem;
-  correlationId:string
+  correlationId: string;
 }
 
 export interface EvaluationResult {
   status: string;
   output: string | undefined;
+  errorMessage?: string;
+  executionTime?: number; // in seconds
+}
+
+export interface ISubmissionData {
+  testCaseId: string;
+  status: EvaluationStatus;
+  errorMessage?: string;
+  actualOutput?: string;
+  expectedOutput?: string;
+  executionTime?: number; // in seconds
 }

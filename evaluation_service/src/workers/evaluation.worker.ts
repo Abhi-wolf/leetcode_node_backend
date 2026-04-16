@@ -5,6 +5,8 @@ import {
   EvaluationJob,
   EvaluationResult,
   TestCase,
+  EvaluationStatus,
+  ISubmissionData,
 } from "../interfaces/evaluation.interface";
 import { runCode } from "../utils/containers/codeRunner.util";
 import { LANGUAGE_CONFIG } from "../config/language.config";
@@ -12,11 +14,42 @@ import { updateSubmission } from "../api/submission.api";
 import { serverConfig } from "../config";
 import { asyncLocalStorage } from "../utils/helpers/request.helpers";
 
+// function matchTestCasesWithResults(
+//   testCases: TestCase[],
+//   results: EvaluationResult[],
+// ) {
+//   const output: Record<string, string> = {};
+
+//   if (results.length !== testCases.length) {
+//     logger.error("Number of results does not match number of test cases");
+//     return output;
+//   }
+
+//   testCases?.map((testCase, index) => {
+//     let retval = "";
+
+//     if (results[index].status === "time_limit_exceeded") {
+//       retval = "TLE";
+//     } else if (results[index].status === "failed") {
+//       retval = "ERROR";
+//     } else {
+//       if (results[index].output === testCase.output) {
+//         retval = "AC";
+//       } else {
+//         retval = "WA";
+//       }
+//     }
+//     output[testCase.id] = retval;
+//   });
+
+//   return output;
+// }
+
 function matchTestCasesWithResults(
   testCases: TestCase[],
   results: EvaluationResult[],
 ) {
-  const output: Record<string, string> = {};
+  const output: Record<string, ISubmissionData> = {};
 
   if (results.length !== testCases.length) {
     logger.error("Number of results does not match number of test cases");
@@ -24,20 +57,46 @@ function matchTestCasesWithResults(
   }
 
   testCases?.map((testCase, index) => {
-    let retval = "";
+    const result = results[index];
 
-    if (results[index].status === "time_limit_exceeded") {
-      retval = "TLE";
-    } else if (results[index].status === "failed") {
-      retval = "ERROR";
+    if (result.status === "time_limit_exceeded") {
+      output[testCase.id] = {
+        testCaseId: testCase.id,
+        status: EvaluationStatus.TIME_LIMIT_EXCEEDED,
+        errorMessage: "Time limit exceeded",
+        actualOutput: result.output,
+        expectedOutput: testCase.output,
+        executionTime: result.executionTime || 0,
+      };
+    } else if (result.status === "failed") {
+      output[testCase.id] = {
+        testCaseId: testCase.id,
+        status: EvaluationStatus.COMPILATION_ERROR, // Runtime Error
+        errorMessage: result.errorMessage || "Runtime error",
+        actualOutput: result.output,
+        expectedOutput: testCase.output,
+        executionTime: result.executionTime || 0,
+      };
     } else {
-      if (results[index].output === testCase.output) {
-        retval = "AC";
+      if (result.output === testCase.output) {
+        output[testCase.id] = {
+          testCaseId: testCase.id,
+          status: EvaluationStatus.SUCCESS,
+          actualOutput: result.output,
+          expectedOutput: testCase.output,
+          executionTime: result.executionTime || 0,
+        };
       } else {
-        retval = "WA";
+        output[testCase.id] = {
+          testCaseId: testCase.id,
+          status: EvaluationStatus.FAILED,
+          errorMessage: "Wrong answer",
+          actualOutput: result.output,
+          expectedOutput: testCase.output,
+          executionTime: result.executionTime || 0,
+        };
       }
     }
-    output[testCase.id] = retval;
   });
 
   return output;
@@ -96,10 +155,6 @@ async function setupEvaluationWorker() {
 
   worker.on("error", (error) => {
     logger.error("Evaluation Worker Error:", error);
-  });
-
-  worker.on("completed", (job) => {
-    logger.info(`Evaluation job ${job.id} completed`);
   });
 
   worker.on("failed", (job, error) => {
