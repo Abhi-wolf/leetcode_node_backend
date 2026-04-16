@@ -16,7 +16,9 @@ async function setupStatusUpdateWorker() {
         async () => {
           // Only process status update jobs in this worker
           if (job.name === serverConfig.STATUS_UPDATE_JOB_NAME) {
-            logger.info(`Processing status update job ${job.id}`);
+            logger.info(
+              `Processing status update job ${job.id} for submission ID: ${job.data.submissionId}`,
+            );
             const data = job.data;
 
             try {
@@ -26,7 +28,9 @@ async function setupStatusUpdateWorker() {
                 data.output,
               );
 
-              logger.info(`Status update job ${job.id} processed successfully`);
+              logger.info(
+                `Status update job ${job.id} processed successfully for submission ID: ${data.submissionId}`,
+              );
             } catch (error) {
               logger.error(`Error processing job ${job.id}:`, error);
               throw error;
