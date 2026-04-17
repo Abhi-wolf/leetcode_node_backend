@@ -172,7 +172,6 @@ export class CircuitBreaker {
     }
 
     try {
-      console.log("Executing operation with circuit breaker");
       const result = await operation();
       this.onSuccess();
       return result;

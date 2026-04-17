@@ -7,7 +7,11 @@ import {
 } from "../models/submission.model";
 import { addSubmissionJob } from "../producers/submission.producer";
 import { ISubmissionRepository } from "../repositories/submission.repository";
-import { BadRequestError, InternalServerError, NotFoundError } from "../utils/errors/app.error";
+import {
+  BadRequestError,
+  InternalServerError,
+  NotFoundError,
+} from "../utils/errors/app.error";
 
 export interface ISubmissionService {
   createSubmission(submissionData: Partial<ISubmission>): Promise<ISubmission>;
@@ -17,7 +21,12 @@ export interface ISubmissionService {
     status: SubmissionStatus,
     submissionData?: ISubmissionData,
   ): Promise<ISubmission | null>;
-  getSubmissionsByProblemId(problemId: string): Promise<ISubmission[]>;
+  getSubmissionsByProblemId(
+    problemId: string,
+    limit?: number,
+    page?: number,
+    userId?: string,
+  ): Promise<{ submissions: ISubmission[]; total: number; page: number }>;
   deleteSubmissionById(id: string): Promise<boolean>;
 }
 
@@ -75,9 +84,9 @@ export class SubmissionService implements ISubmissionService {
       // mark the submission as failed
       await this.submissionRepository.updateStatus(
         submission.id.toString(),
-        SubmissionStatus.FAILED
+        SubmissionStatus.FAILED,
       );
-      
+
       throw new InternalServerError(
         `Failed to add submission job for submission ID: ${submission.id}`,
       );
@@ -111,8 +120,27 @@ export class SubmissionService implements ISubmissionService {
     return submission;
   }
 
-  async getSubmissionsByProblemId(problemId: string): Promise<ISubmission[]> {
-    return this.submissionRepository.findByProblemId(problemId);
+  async getSubmissionsByProblemId(
+    problemId: string,
+    limit: number = 5,
+    page: number = 1,
+    userId?: string,
+  ): Promise<{ submissions: ISubmission[]; total: number; page: number }> {
+    // ensures page is never < 1
+    const safePage = Math.max(1, page);
+    const skip = (safePage - 1) * limit;
+
+    const result = await this.submissionRepository.findByProblemId(
+      problemId,
+      limit,
+      skip,
+    );
+
+    return {
+      submissions: result.submissions,
+      total: result.total,
+      page: safePage,
+    };
   }
 
   async deleteSubmissionById(id: string): Promise<boolean> {

@@ -39,30 +39,25 @@ export async function getProblemById(
   problemId: string,
 ): Promise<IProblemDetails | null> {
   return problemServiceCircuitBreaker.execute(async () => {
-    try {
-      const correlationId = getCorrelationId();
-      logger.info("Fetching problem by ID", { problemId });
+    const correlationId = getCorrelationId();
+    logger.info("Fetching problem by ID", { problemId });
 
-      const response: AxiosResponse<IProblemResponse> = await axios.get(
-        `${serverConfig.PROBLEM_SERVICE_URL}/problems/${problemId}`,
-        {
-          headers: {
-            "x-correlation-id": correlationId,
-          },
-          timeout: 10000, // 10 seconds
+    const response: AxiosResponse<IProblemResponse> = await axios.get(
+      `${serverConfig.PROBLEM_SERVICE_URL}/problems/${problemId}`,
+      {
+        headers: {
+          "x-correlation-id": correlationId,
         },
-      );
+        timeout: 10000, // 10 seconds
+      },
+    );
 
-      if (response.data.success) {
-        return response.data.data;
-      }
-
+    if (!response.data.success) {
       throw new InternalServerError(
         `Failed to fetch problem with id ${problemId}`,
       );
-    } catch (error) {
-      logger.error(`Error fetching problem with id ${problemId}: ${error}`);
-      return null;
     }
+
+    return response.data.data;
   });
 }

@@ -47,18 +47,22 @@ export class SubmissionController {
     const { problemId } = req.params;
     logger.info("Fetching submissions by problem ID", { problemId });
 
-    const submissions =
-      await this.submissionService.getSubmissionsByProblemId(problemId);
+    const limit = parseInt(req.query.limit as string) || 5;
+    const page = parseInt(req.query.page as string) || 1;
+
+    const submissionResult =
+      await this.submissionService.getSubmissionsByProblemId(problemId, limit, page);
 
     logger.info("Submissions fetched successfully", {
       problemId,
-      count: submissions.length,
+      count: submissionResult.total,
+      page: submissionResult.page,
     });
 
     res.status(200).json({
       success: true,
       message: "Submissions fetched successfully",
-      data: submissions,
+      data: submissionResult,
     });
   };
 
