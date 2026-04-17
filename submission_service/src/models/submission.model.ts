@@ -3,6 +3,7 @@ import mongoose, { Document } from "mongoose";
 export enum SubmissionStatus {
   PENDING = "pending",
   COMPLETED = "completed",
+  FAILED = "failed",
 }
 
 export enum SubmissionLanguage {

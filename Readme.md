@@ -24,7 +24,6 @@ This system consists of three main microservices:
 - **Multi-language Support**: Execute code in JavaScript, C++, and Python
 - **Isolated Execution**: Secure code execution using Docker containers
 - **Asynchronous Processing**: Queue-based job processing with BullMQ
-- **Real-time Status Updates**: Live submission status tracking
 - **Comprehensive Logging**: Structured logging with correlation IDs
 - **Health Checks**: Service health monitoring and dependency management
 - **Scalable Architecture**: Designed for horizontal scaling

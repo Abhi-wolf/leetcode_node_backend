@@ -3,6 +3,7 @@ import { serverConfig } from "../config";
 import { InternalServerError } from "../utils/errors/app.error";
 import logger from "../config/logger.config";
 import { getCorrelationId } from "../utils/helpers/request.helpers";
+import { CircuitBreaker } from "../utils/circuit-breaker";
 
 export interface ITestCase {
   input: string;
@@ -28,33 +29,40 @@ export interface IProblemResponse {
   success: boolean;
 }
 
+const problemServiceCircuitBreaker = new CircuitBreaker({
+  failureThreshold: 5,
+  halfOpenMaxAttempts: 3,
+  cooldownMs: 60000,
+});
+
 export async function getProblemById(
   problemId: string,
 ): Promise<IProblemDetails | null> {
-  // TODO:improve the axios api error handling
-  try {
-    const correlationId = getCorrelationId();
-    logger.info("Fetching problem by ID", { problemId });
+  return problemServiceCircuitBreaker.execute(async () => {
+    try {
+      const correlationId = getCorrelationId();
+      logger.info("Fetching problem by ID", { problemId });
 
-    const response: AxiosResponse<IProblemResponse> = await axios.get(
-      `${serverConfig.PROBLEM_SERVICE_URL}/problems/${problemId}`,
-      {
-        headers: {
-          "x-correlation-id": correlationId,
+      const response: AxiosResponse<IProblemResponse> = await axios.get(
+        `${serverConfig.PROBLEM_SERVICE_URL}/problems/${problemId}`,
+        {
+          headers: {
+            "x-correlation-id": correlationId,
+          },
+          timeout: 10000, // 10 seconds
         },
-      },
-    );
+      );
 
-    if (response.data.success) {
-      return response.data.data;
+      if (response.data.success) {
+        return response.data.data;
+      }
+
+      throw new InternalServerError(
+        `Failed to fetch problem with id ${problemId}`,
+      );
+    } catch (error) {
+      logger.error(`Error fetching problem with id ${problemId}: ${error}`);
+      return null;
     }
-
-    throw new InternalServerError(
-      `Failed to fetch problem with id ${problemId}`,
-    );
-  } catch (error) {
-    logger.error(`Error fetching problem with id ${problemId}: ${error}`);
-    return null;
-  }
-
+  });
 }

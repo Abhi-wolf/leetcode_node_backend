@@ -11,7 +11,7 @@ export interface ISubmissionRepository {
   updateStatus(
     id: string,
     status: SubmissionStatus,
-    submissionData: ISubmissionData,
+    submissionData?: ISubmissionData,
   ): Promise<ISubmission | null>;
   findByProblemId(problemId: string): Promise<ISubmission[]>;
   deleteById(id: string): Promise<boolean>;
@@ -31,7 +31,7 @@ export class SubmissionRepository implements ISubmissionRepository {
   async updateStatus(
     id: string,
     status: SubmissionStatus,
-    submissionData: ISubmissionData,
+    submissionData?: ISubmissionData,
   ): Promise<ISubmission | null> {
     const submission = await Submission.findByIdAndUpdate(
       id,
