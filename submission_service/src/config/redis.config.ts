@@ -1,9 +1,8 @@
-import Redis from "ioredis";
+import { serverConfig } from ".";
 import logger from "./logger.config";
+import Redis from "ioredis";
 
-const redisConfig = {
-  host: process.env.REDIS_HOST || "localhost",
-  port: Number(process.env.REDIS_PORT) || 6379,
+const redisBaseConfig = {
   maxRetriesPerRequest: null,
   retryStrategy(times: number) {
     if (times > 3) {
@@ -17,20 +16,44 @@ const redisConfig = {
   },
 };
 
-export const redis = new Redis(redisConfig);
+class RedisConnection {
+  private static instance: RedisConnection | null = null;
+  private redis: Redis | null;
 
-redis.on("connect", () => {
-  logger.info("Connected to Redis server");
-});
+  private constructor() {
+    this.redis = null;
+  }
 
-redis.on("error", (err) => {
-  logger.error("Redis connection error:", err);
-});
+  public static getInstance(): RedisConnection {
+    if (!RedisConnection.instance) {
+      RedisConnection.instance = new RedisConnection();
+    }
+    return RedisConnection.instance;
+  }
 
-redis.on("end", () => {
-  logger.info("Redis connection closed");
-});
+  async connect(): Promise<Redis> {
+    if (this.redis) return this.redis;
 
-export const createNewRedisConnection = () => {
-  return new Redis(redisConfig);
-};
+    this.redis = new Redis(serverConfig.REDIS_URL, redisBaseConfig);
+
+    return this.redis;
+  }
+
+  getRedis() {
+    return this.redis;
+  }
+
+  createNewRedisConnection(): Redis {
+    return new Redis(serverConfig.REDIS_URL, redisBaseConfig);
+  }
+
+  async disconnect() {
+    if (this.redis) {
+      await this.redis.quit();
+      this.redis = null;
+      logger.info("Redis connection closed");
+    }
+  }
+}
+
+export const redisConnection = RedisConnection.getInstance();

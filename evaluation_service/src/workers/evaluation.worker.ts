@@ -1,6 +1,5 @@
 import { Worker } from "bullmq";
 import logger from "../config/logger.config";
-import { createNewRedisConnection } from "../config/redis.config";
 import {
   EvaluationJob,
   EvaluationResult,
@@ -13,6 +12,10 @@ import { LANGUAGE_CONFIG } from "../config/language.config";
 import { serverConfig } from "../config";
 import { asyncLocalStorage } from "../utils/helpers/request.helpers";
 import { addStatusUpdateJob } from "../producers/status-update.producer";
+import { redisConnection } from "../config/redis.config";
+
+
+let evaluationWorker: Worker | null = null;
 
 
 function matchTestCasesWithResults(
@@ -73,7 +76,7 @@ function matchTestCasesWithResults(
 }
 
 async function setupEvaluationWorker() {
-  const worker = new Worker(
+  evaluationWorker = new Worker(
     serverConfig.SUBMISSION_QUEUE_NAME,
     async (job) => {
       return asyncLocalStorage.run(
@@ -126,20 +129,30 @@ async function setupEvaluationWorker() {
       );
     },
     {
-      connection: createNewRedisConnection(),
+      connection: redisConnection.createNewRedisConnection(),
       concurrency: 2, // Process 2 jobs concurrently
     },
   );
 
-  worker.on("error", (error) => {
+  evaluationWorker.on("error", (error) => {
     logger.error("Evaluation Worker Error:", error);
   });
 
-  worker.on("failed", (job, error) => {
+  evaluationWorker.on("failed", (job, error) => {
     logger.error(`Evaluation job ${job?.id} failed: ${error.message}`);
   });
 }
 
 export async function startEvaluationWorkers() {
   await setupEvaluationWorker();
+  logger.info("Evaluation worker started");
+}
+
+export async function stopEvaluationWorkers() {
+  if (evaluationWorker) {
+    logger.info("Stopping evaluation worker...");
+    await evaluationWorker.close();
+    evaluationWorker = null;
+    logger.info("Evaluation worker stopped");
+  }
 }

@@ -1,10 +1,10 @@
 import { Queue } from "bullmq";
-import { createNewRedisConnection } from "../config/redis.config";
 import logger from "../config/logger.config";
 import { serverConfig } from "../config";
+import { redisConnection } from "../config/redis.config";
 
 export const submissionQueue = new Queue(serverConfig.SUBMISSION_QUEUE_NAME, {
-  connection: createNewRedisConnection(),
+  connection: redisConnection.createNewRedisConnection(),
   defaultJobOptions: {
     attempts: 3,
     backoff: {
