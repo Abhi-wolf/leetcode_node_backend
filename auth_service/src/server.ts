@@ -8,6 +8,7 @@ import {
 import logger from "./config/logger.config";
 import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middleware";
 import morganMiddleware from "./middlewares/morgan.middleware";
+import { db } from "./config/db";
 const app = express();
 
 app.use(express.json());
@@ -35,7 +36,63 @@ app.use((req: Request, res: Response) => {
 app.use(appErrorHandler);
 app.use(genericErrorHandler);
 
-app.listen(serverConfig.PORT, () => {
-  logger.info(`Server is running on http://localhost:${serverConfig.PORT}`);
-  logger.info(`Press Ctrl+C to stop the server.`);
-});
+async function initializeConnection() {
+ try {
+  await db.checkConnection();
+ } catch (error) {
+  logger.error("Error initializing connection:", error);
+  throw error;
+ }
+}
+
+async function startServer() {
+  try {
+    await initializeConnection();
+
+    const server = app.listen(serverConfig.PORT, () => {
+      logger.info(`Auth server is running on PORT ${serverConfig.PORT}`);
+    });
+
+    const gracefulShutdown = async (signal: string) => {
+      logger.info(`${signal} received - starting graceful shutdown`);
+
+      server.close(async () => {
+        logger.info("HTTP server closed");
+
+        try {
+          await db.shutdown();
+          logger.info("All connections closed successfully");
+          process.exit(0);
+        } catch (error) {
+          logger.error("Error during shutdown:", error);
+          process.exit(1);
+        }
+      });
+
+      setTimeout(() => {
+        logger.error("Forced shutdown after timeout");
+        process.exit(1);
+      }, 10000);
+    };
+
+    process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+    process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+
+    process.on("uncaughtException", (error) => {
+      logger.error("Uncaught Exception:", error);
+      gracefulShutdown("uncaughtException");
+    });
+
+    process.on("unhandledRejection", (reason, promise) => {
+      logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+      gracefulShutdown("unhandledRejection");
+    });
+  } catch (error) {
+    logger.error("Error starting server:", error);
+    process.exit(1);
+  }
+}
+
+startServer();
+
+

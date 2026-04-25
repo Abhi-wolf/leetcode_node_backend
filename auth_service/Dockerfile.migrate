@@ -1,6 +1,21 @@
+# FROM node:20-alpine
+
+# WORKDIR /auth-service
+
+# COPY package*.json ./
+
+# RUN npm ci
+
+# COPY . .
+
+# RUN npm run build
+
+# CMD ["npm", "run", "migrate:up"]
+
+
 FROM node:20-alpine
 
-WORKDIR /auth-service
+WORKDIR /leetcode-server/auth-service
 
 COPY package*.json ./
 
@@ -10,4 +25,5 @@ COPY . .
 
 RUN npm run build
 
-CMD ["npm", "run", "migrate:up"]
+# CMD ["npm", "run", "migrate:up"]
+CMD ["sh", "-c", "sleep 5 && npm run migrate:up"]

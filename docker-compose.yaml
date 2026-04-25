@@ -1,0 +1,176 @@
+services:
+  mongo:
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - backend
+    volumes:
+      - leetcode_mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - backend
+    volumes:
+      - redis_data:/data
+  
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=auth_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+    
+  migrate:
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile.migrate
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=auth_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - JWT_ACCESS_SECRET=local-access-secret-change-in-prod
+      - JWT_REFRESH_SECRET=local-refresh-secret-change-in-prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - backend
+
+  # docker inside docker
+  # privileged: true is required for Docker-in-Docker (DinD) because the inner Docker daemon (dockerd) needs
+  # low-level kernel capabilities that normal containers do not have.
+  dind:
+    image: docker:24-dind
+    restart: always
+    privileged: true
+    environment:
+      - DOCKER_TLS_CERTDIR=
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - backend
+
+
+  problem-service:
+    build:
+      context: ./problem_service
+      dockerfile: Dockerfile
+    ports:
+      - 3001:3001
+    environment:
+      - PORT=3001
+      - DB_URI=mongodb://mongo:27017/leetcode_problem_service
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - backend
+
+  submission-service:
+    build:
+      context: ./submission_service
+      dockerfile: Dockerfile
+    ports:
+      - 3002:3002
+    environment:
+      - PORT=3002
+      - DB_URI=mongodb://mongo:27017/leetcode_submission_service
+      - PROBLEM_SERVICE_URL=http://problem-service:3001/api/v1
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+
+  evaluation-service:
+    build:
+      context: ./evaluation_service
+      dockerfile: Dockerfile
+    ports:
+      - 3003:3003
+    environment:
+      - PORT=3003
+      - PROBLEM_SERVICE_URL=http://problem-service:3001/api/v1
+      - SUBMISSION_SERVICE_URL=http://submission-service:3002/api/v1
+      - REDIS_URL=redis://redis:6379
+      - DOCKER_HOST=tcp://dind:2375
+    depends_on:
+      redis:
+        condition: service_healthy
+      dind:
+        condition: service_healthy
+    networks:
+      - backend
+
+  auth-service:
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile
+    ports:
+      - 3004:3004
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=auth_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - JWT_ACCESS_SECRET=ldfjsdfkEKFHWK#&!#*81273
+      - JWT_REFRESH_SECRET=ldfjsdfkEKFHWK#&!#*81273
+      - JWT_ACCESS_EXPIRES_IN=1h
+      - JWT_REFRESH_EXPIRES_IN=7d
+      - PORT=3004
+      - NODE_ENV=development
+      - SERVICE_NAME=auth-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  redis_data:
+  postgres_data:
+  leetcode_mongo_data:
