@@ -11,6 +11,7 @@ type ServerConfig = {
   SUBMISSION_QUEUE_NAME: string;
   STATUS_UPDATE_QUEUE_NAME: string;
   STATUS_UPDATE_JOB_NAME: string;
+  REDIS_URL: string;
 };
 
 function loadEnv() {
@@ -24,6 +25,8 @@ export const serverConfig: ServerConfig = {
   PORT: Number(process.env.PORT) || 3002,
   SERVICE_NAME: process.env.SERVICE_NAME || "submission-service",
   NODE_ENV: process.env.NODE_ENV || "development",
+  REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
+
   EVALUATION_JOB_NAME: process.env.EVALUATION_JOB_NAME || "evaluate-submission",
   SUBMISSION_QUEUE_NAME:
     process.env.SUBMISSION_QUEUE_NAME || "submission_queue",

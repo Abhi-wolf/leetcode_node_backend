@@ -10,7 +10,7 @@ export const LANGUAGE_CONFIG = {
     imageName: CPP_IMAGE,
   },
   js: {
-    timeout: 10000,
+    timeout: 20000,
     imageName: NODE_IMAGE,
   },
 };

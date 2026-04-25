@@ -17,7 +17,7 @@ export async function runCode(options: RunCodeOptions) {
   const container = await createNewDockerContainer({
     imageName: imageName,
     cmdExecutable: commands[language](code, input),
-    memoryLimitMB: 1024 * 1024 * 1024,
+    memoryLimitMB: 256 * 1024 * 1024, // 256 MiB
   });
 
   let isTimeLimitExceeded = false;
@@ -30,45 +30,53 @@ export async function runCode(options: RunCodeOptions) {
   // TODO  : add check when container not created
   logger.info(`Container created successfully with ID: ${container?.id}`);
 
-  await container?.start();
+  try {
+    await container?.start();
 
-  const status = await container?.wait();
+    const status = await container?.wait();
 
-  if (isTimeLimitExceeded) {
-    await container?.remove();
+    if (isTimeLimitExceeded) {
+      return {
+        status: "time_limit_exceeded",
+        output: "Time limit exceeded",
+      };
+    }
+
+    const logs = await container?.logs({
+      stdout: true,
+      stderr: true,
+    });
+
+    const containerLogs = processLogs(logs);
+
+    if (status?.StatusCode === 0) {
+      logger.info("Code executed successfully.");
+      return {
+        status: "success",
+        output: containerLogs,
+        executionTime: (Date.now() - startTime) / 1000, // in seconds
+      };
+    } else {
+      logger.info("Code execution failed.", { containerLogs });
+      return {
+        status: "failed",
+        output: "",
+        errorMessage: containerLogs,
+        executionTime: (Date.now() - startTime) / 1000,
+      };
+    }
+  } catch (error) {
+    logger.error("Error running code:", error);
     return {
-      status: "time_limit_exceeded",
-      output: "Time limit exceeded",
-    };
-  }
-
-  const logs = await container?.logs({
-    stdout: true,
-    stderr: true,
-  });
-
-  const containerLogs = processLogs(logs);
-
-  await container?.remove();
-
-  clearTimeout(timeLimitExceeded);
-
-  if (status?.StatusCode === 0) {
-    logger.info("Code executed successfully.");
-    return {
-      status: "success",
-      output: containerLogs,
-      executionTime: (Date.now() - startTime) / 1000, // in seconds
-    };
-  } else {
-    console.error("Code execution failed with status code:", containerLogs);
-    logger.info("Code execution failed.", { containerLogs });
-    return {
-      status: "failed",
+      status: "error",
       output: "",
-      errorMessage: containerLogs,
+      errorMessage: "Error running code",
       executionTime: (Date.now() - startTime) / 1000,
     };
+  } finally {
+    await container?.remove({ force: true }).catch((e) => logger.error("Cleanup error:", e.message));
+    clearTimeout(timeLimitExceeded);
+    logger.info("Container removed successfully.");
   }
 }
 

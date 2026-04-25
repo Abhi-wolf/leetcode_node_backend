@@ -8,8 +8,7 @@ services:
     environment:
       - PORT=3001
       - DB_URI=mongodb://mongo:27017/leetcode_problem_service
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379
     depends_on:
       mongo:
         condition: service_healthy
@@ -26,8 +25,7 @@ services:
       - PORT=3002
       - DB_URI=mongodb://mongo:27017/leetcode_submission_service
       - PROBLEM_SERVICE_URL=http://problem-service:3001/api/v1
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379
     depends_on:
       mongo:
         condition: service_healthy
@@ -46,8 +44,7 @@ services:
       - PORT=3003
       - PROBLEM_SERVICE_URL=http://problem-service:3001/api/v1
       - SUBMISSION_SERVICE_URL=http://submission-service:3002/api/v1
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379
       - DOCKER_HOST=tcp://dind:2375
     depends_on:
       redis:

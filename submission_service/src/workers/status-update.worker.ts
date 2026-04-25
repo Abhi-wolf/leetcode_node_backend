@@ -2,13 +2,15 @@ import { Worker } from "bullmq";
 import { serverConfig } from "../config";
 import { asyncLocalStorage } from "../utils/helpers/request.helpers";
 import logger from "../config/logger.config";
-import { createNewRedisConnection } from "../config/redis.config";
 import { SubmissionFactory } from "../factories/submission.factory";
+import { redisConnection } from "../config/redis.config";
 
 const submissionService = SubmissionFactory.getSubmissionService();
 
+let statusUpdateWorker: Worker | null = null;
+
 async function setupStatusUpdateWorker() {
-  const worker = new Worker(
+  statusUpdateWorker = new Worker(
     serverConfig.STATUS_UPDATE_QUEUE_NAME,
     async (job) => {
       return asyncLocalStorage.run(
@@ -40,20 +42,30 @@ async function setupStatusUpdateWorker() {
       );
     },
     {
-      connection: createNewRedisConnection(),
+      connection: redisConnection.createNewRedisConnection(),
       concurrency: 10,
     },
   );
 
-  worker.on("error", (error) => {
-    logger.error("Worker Error:", error);
+  statusUpdateWorker.on("error", (error) => {
+    logger.error("Status update worker error:", error);
   });
 
-  worker.on("failed", (job, error) => {
-    logger.error(`Job ${job?.id} failed with error:`, error);
+  statusUpdateWorker.on("failed", (job, error) => {
+    logger.error(`Status update job ${job?.id} failed with error:`, error);
   });
 }
 
 export async function startStatusUpdateWorkers() {
   await setupStatusUpdateWorker();
+  logger.info("Status update worker started");
+}
+
+export async function stopStatusUpdateWorkers() {
+  if (statusUpdateWorker) {
+    logger.info("Stopping status update worker...");
+    await statusUpdateWorker.close();
+    statusUpdateWorker = null;
+    logger.info("Status update worker stopped");
+  }
 }

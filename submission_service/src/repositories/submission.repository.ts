@@ -11,9 +11,13 @@ export interface ISubmissionRepository {
   updateStatus(
     id: string,
     status: SubmissionStatus,
-    submissionData: ISubmissionData,
+    submissionData?: ISubmissionData,
   ): Promise<ISubmission | null>;
-  findByProblemId(problemId: string): Promise<ISubmission[]>;
+  findByProblemId(
+    problemId: string,
+    limit: number,
+    page: number,
+  ): Promise<{ submissions: ISubmission[]; total: number }>;
   deleteById(id: string): Promise<boolean>;
 }
 
@@ -31,7 +35,7 @@ export class SubmissionRepository implements ISubmissionRepository {
   async updateStatus(
     id: string,
     status: SubmissionStatus,
-    submissionData: ISubmissionData,
+    submissionData?: ISubmissionData,
   ): Promise<ISubmission | null> {
     const submission = await Submission.findByIdAndUpdate(
       id,
@@ -41,9 +45,17 @@ export class SubmissionRepository implements ISubmissionRepository {
     return submission;
   }
 
-  async findByProblemId(problemId: string): Promise<ISubmission[]> {
-    const submissions = await Submission.find({ problemId });
-    return submissions;
+  async findByProblemId(
+    problemId: string,
+    limit: number,
+    page: number,
+  ): Promise<{ submissions: ISubmission[]; total: number }> {
+    const [submissions, total] = await Promise.all([
+      Submission.find({ problemId }).skip(page).limit(limit),
+      Submission.countDocuments({ problemId }),
+    ]);
+
+    return { submissions, total };
   }
 
   async deleteById(id: string): Promise<boolean> {
