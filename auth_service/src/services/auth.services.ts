@@ -19,7 +19,7 @@ export class AuthService {
     private userRepository: UserRepository,
     private refreshTokenRepository: RefreshTokenRepository,
     private db: Database,
-  ) {}
+  ) { }
 
   /**
    * Generate access and refresh tokens
@@ -89,16 +89,6 @@ export class AuthService {
       throw new InternalServerError("Failed to create user");
     }
 
-    const refreshToken = this.generateRefreshToken();
-
-    const duration = ms(serverConfig.JWT_REFRESH_EXPIRES_IN as ms.StringValue);
-
-    await this.refreshTokenRepository.create({
-      user_id: user.id,
-      token_hash: this.hashToken(refreshToken),
-      expires_at: new Date((Date.now() + duration) as any),
-    });
-
     const userDetails = {
       email: user.email,
       name: user.name,
@@ -109,8 +99,6 @@ export class AuthService {
     logger.info(`New user registered: ${email}`);
 
     return {
-      accessToken: this.generateAccessToken(userDetails),
-      refreshToken,
       user: userDetails,
     };
   }
@@ -279,13 +267,27 @@ export class AuthService {
 
     if (data.email) updateFields.email = data.email;
     if (data.name) updateFields.name = data.name;
-    if (data.password)
+    if (data.password) {
       updateFields.password = await bcrypt.hash(data.password, 10);
+    }
 
     if (Object.keys(updateFields).length === 0)
       throw new BadRequestError("Requires a field and value to update");
 
-    const updatedUser = await this.userRepository.update(id, updateFields);
+    let updatedUser;
+
+    if (data.password) {
+      // Revoke all active refresh tokens for security when password changes
+
+      await this.db.withTransaction(async (client) => {
+        await this.refreshTokenRepository.revokeAllUserTokens(id, client);
+
+        updatedUser = await this.userRepository.update(id, updateFields, client);
+      });
+
+    } else {
+      updatedUser = await this.userRepository.update(id, updateFields);
+    }
 
     if (!updatedUser) throw new InternalServerError("User update failed");
 

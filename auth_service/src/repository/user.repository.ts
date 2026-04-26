@@ -1,6 +1,14 @@
 import { Database } from "../config/db";
 import { CreateUserDto, User } from "../interfaces/user.interface";
 import { parsePgArray } from "../utils/parsePgArray";
+import { PoolClient, QueryResult, QueryResultRow } from "pg";
+
+type QueryExecutor = {
+  query: <T extends QueryResultRow = QueryResultRow>(
+    text: string,
+    params?: unknown[]
+  ) => Promise<QueryResult<T>>;
+};
 
 export class UserRepository {
   constructor(private db: Database) {}
@@ -68,7 +76,9 @@ export class UserRepository {
     return (result.rowCount ?? 0) > 0;
   }
 
-  async update(id: string, fields: Partial<CreateUserDto>) {
+  async update(id: string, fields: Partial<CreateUserDto>, client?: PoolClient) {
+    const executor: QueryExecutor = client ?? this.db;
+
     const entries = Object.entries(fields).filter(([, v]) => v !== undefined);
 
     if (entries.length === 0) return null;
@@ -79,7 +89,7 @@ export class UserRepository {
 
     const values = entries.map(([, val]) => val);
 
-    const result = await this.db.query<User>(
+    const result = await executor.query<User>(
       `UPDATE users SET ${setClause} WHERE id = $1 RETURNING id, email, name, roles`,
       [id, ...values],
     );

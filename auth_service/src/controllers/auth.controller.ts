@@ -7,8 +7,6 @@ export class AuthController {
   register = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password, name } = req.body;
 
-    console.log("register AuthController", email, password, name);
-
     const data = await this.authService.register(email, password, name);
     res.status(201).json({
       message: "User registered successfully",

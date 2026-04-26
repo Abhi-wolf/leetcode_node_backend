@@ -53,4 +53,21 @@ export class RefreshTokenRepository {
       row: result.rows[0] ?? null,
     };
   }
+
+  async revokeAllUserTokens(user_id: string, client?: PoolClient) {
+    const executor: QueryExecutor = client ?? this.db;
+
+    const result = await executor.query(
+      `UPDATE refresh_tokens
+        SET revoked_at = NOW()
+        WHERE user_id = $1 AND revoked_at IS NULL
+        RETURNING id`,
+      [user_id],
+    );
+
+    return {
+      success: true,
+      count: result.rowCount ?? 0,
+    };
+  }
 }
