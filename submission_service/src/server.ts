@@ -40,6 +40,7 @@ app.use(genericErrorHandler);
 async function initializeConnection() {
   try {
     await mongoConnection.connect();
+    await redisConnection.connect();
     await startStatusUpdateWorkers();
     logger.info("All connections initialized successfully");
   } catch (error) {

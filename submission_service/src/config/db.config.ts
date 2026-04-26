@@ -1,12 +1,10 @@
-
 import mongoose, { Connection } from "mongoose";
 import logger from "./logger.config";
 import { serverConfig } from ".";
 
-
 class MongoConnection {
   private connection: Connection | null = null;
-  
+
   constructor() {
     this.connection = null;
   }
@@ -55,6 +53,19 @@ class MongoConnection {
 
   getConnection() {
     return this.connection;
+  }
+
+  async checkDatabase(): Promise<boolean> {
+    if (!this.connection || !this.connection.db) {
+      return false;
+    }
+
+    try {
+      await this.connection.db.admin().ping();
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }
 

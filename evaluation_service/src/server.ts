@@ -10,6 +10,7 @@ import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middlew
 import { startEvaluationWorkers, stopEvaluationWorkers } from "./workers/evaluation.worker";
 import { pullAllImages } from "./utils/containers/pullImage.util";
 import morganMiddleware from "./middlewares/morgan.middleware";
+import { redisConnection } from "./config/redis.config";
 const app = express();
 
 app.use(express.json());
@@ -40,6 +41,7 @@ app.use(genericErrorHandler);
 
 async function initializeConnection() {
   try {
+    await redisConnection.connect();
     await startEvaluationWorkers();
     await pullAllImages();
     logger.info("All connections initialized successfully");

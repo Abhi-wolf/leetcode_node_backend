@@ -29,6 +29,7 @@ export class AuthFactory {
       this.authService = new AuthService(
         this.getAuthRepository(),
         this.getRefreshTokenRepository(),
+        db,
       );
     }
     return this.authService;

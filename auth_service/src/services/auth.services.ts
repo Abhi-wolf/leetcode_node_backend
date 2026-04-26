@@ -12,11 +12,13 @@ import {
 } from "../utils/errors/app.error";
 import { CreateUserDto, UserRole } from "../interfaces/user.interface";
 import ms from "ms";
+import { Database } from "../config/db";
 
 export class AuthService {
   constructor(
     private userRepository: UserRepository,
     private refreshTokenRepository: RefreshTokenRepository,
+    private db: Database,
   ) {}
 
   /**
@@ -218,13 +220,6 @@ export class AuthService {
 
     if (!user || !user.is_active) throw new NotFoundError("User not found");
 
-    const revokeResult =
-      await this.refreshTokenRepository.updateTokenRevoked(hashedRefreshToken);
-
-    if (!revokeResult.success) {
-      throw new BadRequestError("Token already revoked or not found");
-    }
-
     const accessToken = this.generateAccessToken({
       id: user.id,
       email: user.email,
@@ -234,10 +229,24 @@ export class AuthService {
 
     const duration = ms(serverConfig.JWT_REFRESH_EXPIRES_IN as ms.StringValue);
 
-    await this.refreshTokenRepository.create({
-      user_id: user.id,
-      token_hash: this.hashToken(refreshToken),
-      expires_at: new Date((Date.now() + duration) as any),
+    await this.db.withTransaction(async (client) => {
+      const revokeResult = await this.refreshTokenRepository.updateTokenRevoked(
+        hashedRefreshToken,
+        client,
+      );
+
+      if (!revokeResult.success) {
+        throw new BadRequestError("Token already revoked or not found");
+      }
+
+      await this.refreshTokenRepository.create(
+        {
+          user_id: user.id,
+          token_hash: this.hashToken(refreshToken),
+          expires_at: new Date((Date.now() + duration) as any),
+        },
+        client,
+      );
     });
 
     logger.info(`Token refreshed for user ${user.id}`);

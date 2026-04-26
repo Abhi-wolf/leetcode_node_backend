@@ -22,14 +22,15 @@ export class Database {
     });
   }
 
-  async checkConnection(): Promise<void> {
+  async checkConnection(): Promise<boolean> {
     const client = await this.pool.connect();
     try {
       await client.query("SELECT 1");
       logger.info("Database connection successful");
+      return true;
     } catch (err) {
       logger.error("Database connection failed", err);
-      throw err;
+      return false;
     } finally {
       client.release();
     }

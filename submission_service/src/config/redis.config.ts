@@ -32,10 +32,14 @@ class RedisConnection {
   }
 
   async connect(): Promise<Redis> {
-    if (this.redis) return this.redis;
+    if (this.redis) {
+      logger.info("Redis connection already exists");
+      return this.redis;
+    }
 
     this.redis = new Redis(serverConfig.REDIS_URL, redisBaseConfig);
 
+    logger.info("Redis connection established");
     return this.redis;
   }
 
@@ -52,6 +56,19 @@ class RedisConnection {
       await this.redis.quit();
       this.redis = null;
       logger.info("Redis connection closed");
+    }
+  }
+
+  async checkRedis(): Promise<boolean> {
+    if (!this.redis) {
+      return false;
+    }
+
+    try {
+      const response = await this.redis.ping();
+      return response === "PONG";
+    } catch (error) {
+      return false;
     }
   }
 }

@@ -73,7 +73,8 @@ services:
     environment:
       - PORT=3001
       - DB_URI=mongodb://mongo:27017/leetcode_problem_service
-      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=development
+      - SERVICE_NAME=problem-service
     volumes:
       - ./problem_service/src:/leetcode-server/problem-service/src
       - ./problem_service/package.json:/leetcode-server/problem-service/package.json
@@ -96,6 +97,12 @@ services:
       - DB_URI=mongodb://mongo:27017/leetcode_submission_service
       - PROBLEM_SERVICE_URL=http://problem-service:3001/api/v1
       - REDIS_URL=redis://redis:6379
+      - SERVICE_NAME=submission-service
+      - NODE_ENV=development
+      - EVALUATION_JOB_NAME=evaluate-submission
+      - SUBMISSION_QUEUE_NAME=submission_queue
+      - STATUS_UPDATE_QUEUE_NAME=status_update_queue
+      - STATUS_UPDATE_JOB_NAME=update-submission-status
     volumes:
       - ./submission_service/src:/leetcode-server/submission-service/src
       - ./submission_service/package.json:/leetcode-server/submission-service/package.json
@@ -123,6 +130,11 @@ services:
       - SUBMISSION_SERVICE_URL=http://submission-service:3002/api/v1
       - REDIS_URL=redis://redis:6379
       - DOCKER_HOST=tcp://dind:2375
+      - SERVICE_NAME=evaluation-service
+      - EVALUATION_JOB_NAME=evaluate-submission
+      - SUBMISSION_QUEUE_NAME=submission_queue
+      - STATUS_UPDATE_QUEUE_NAME=status_update_queue
+      - STATUS_UPDATE_JOB_NAME=update-submission-status
     volumes:
       - ./evaluation_service/src:/leetcode-server/evaluation-service/src
       - ./evaluation_service/package.json:/leetcode-server/evaluation-service/package.json

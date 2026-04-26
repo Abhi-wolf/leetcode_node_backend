@@ -54,6 +54,19 @@ class RedisConnection {
       logger.info("Redis connection closed");
     }
   }
+
+   async checkRedis(): Promise<boolean> {
+    if (!this.redis) {
+      return false;
+    }
+
+    try {
+      const response = await this.redis.ping();
+      return response === "PONG";
+    } catch (error) {
+      return false;
+    }
+  }
 }
 
 export const redisConnection = RedisConnection.getInstance();

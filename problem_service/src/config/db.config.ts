@@ -56,6 +56,19 @@ class MongoConnection {
   getConnection() {
     return this.connection;
   }
+
+   async checkDatabase(): Promise<boolean> {
+    if (!this.connection || !this.connection.db) {
+      return false;
+    }
+
+    try {
+      await this.connection.db.admin().ping();
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
 }
 
 export const mongoConnection = new MongoConnection();
