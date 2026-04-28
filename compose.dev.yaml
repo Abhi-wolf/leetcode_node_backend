@@ -63,15 +63,33 @@ services:
     restart: on-failure
     networks:
       - backend
+  
+  registry-service:
+    build:
+      context: ./registry_service
+      dockerfile: Dockerfile.dev
+    ports:
+      - 3001:3001
+    environment:
+      - PORT=3001
+      - NODE_ENV=development
+      - SERVICE_NAME=registry-service
+    volumes:
+      - ./registry_service/src:/leetcode-server/registry-service/src
+      - ./registry_service/package.json:/leetcode-server/registry-service/package.json
+      - ./registry_service/tsconfig.json:/leetcode-server/registry-service/tsconfig.json
+      - /leetcode-server/registry-service/node_modules
+    networks:
+      - backend
 
   problem-service:
     build:
       context: ./problem_service
       dockerfile: Dockerfile.dev
     ports:
-      - 3001:3001
+      - 3010:3010
     environment:
-      - PORT=3001
+      - PORT=3010
       - DB_URI=mongodb://mongo:27017/leetcode_problem_service
       - NODE_ENV=development
       - SERVICE_NAME=problem-service
@@ -91,11 +109,11 @@ services:
       context: ./submission_service
       dockerfile: Dockerfile.dev
     ports:
-      - 3002:3002
+      - 3020:3020
     environment:
-      - PORT=3002
+      - PORT=3020
       - DB_URI=mongodb://mongo:27017/leetcode_submission_service
-      - PROBLEM_SERVICE_URL=http://problem-service:3001/api/v1
+      - PROBLEM_SERVICE_URL=http://problem-service:3010/api/v1
       - REDIS_URL=redis://redis:6379
       - SERVICE_NAME=submission-service
       - NODE_ENV=development
@@ -122,12 +140,17 @@ services:
     build:
       context: ./evaluation_service
       dockerfile: Dockerfile.dev
+    # ports:
+    #   - 3030:3030
+    deploy:
+      replicas: 3
     ports:
-      - 3003:3003
+      - 3030-3032:3030
     environment:
-      - PORT=3003
-      - PROBLEM_SERVICE_URL=http://problem-service:3001/api/v1
-      - SUBMISSION_SERVICE_URL=http://submission-service:3002/api/v1
+      - PORT=3030
+      - PROBLEM_SERVICE_URL=http://problem-service:3010/api/v1
+      - SUBMISSION_SERVICE_URL=http://submission-service:3020/api/v1
+      - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
       - REDIS_URL=redis://redis:6379
       - DOCKER_HOST=tcp://dind:2375
       - SERVICE_NAME=evaluation-service
@@ -154,7 +177,7 @@ services:
       dockerfile: Dockerfile.dev
     command: npm run dev
     ports:
-      - 3004:3004
+      - 3002:3002
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -165,7 +188,7 @@ services:
       - JWT_REFRESH_SECRET=ldfjsdfkEKFHWK#&!#*81273
       - JWT_ACCESS_EXPIRES_IN=1h
       - JWT_REFRESH_EXPIRES_IN=7d
-      - PORT=3004
+      - PORT=3002
       - NODE_ENV=development
       - SERVICE_NAME=auth-service
     depends_on:

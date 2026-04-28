@@ -24,7 +24,7 @@ function loadEnv() {
 loadEnv();
 
 export const serverConfig: ServerConfig = {
-  PORT: Number(process.env.PORT) || 3001,
+  PORT: Number(process.env.PORT) || 3002,
   SERVICE_NAME: process.env.SERVICE_NAME || "auth-service",
   NODE_ENV: process.env.NODE_ENV || "development",
   DB_HOST: process.env.DB_HOST || "postgres",

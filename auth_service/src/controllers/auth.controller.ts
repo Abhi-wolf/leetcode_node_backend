@@ -10,6 +10,7 @@ export class AuthController {
     const data = await this.authService.register(email, password, name);
     res.status(201).json({
       message: "User registered successfully",
+      success: true,
       data,
     });
   };
@@ -19,6 +20,7 @@ export class AuthController {
     const data = await this.authService.login(email, password);
     res.status(200).json({
       message: "User logged in successfully",
+      success: true,
       data,
     });
   };
@@ -30,6 +32,7 @@ export class AuthController {
 
     res.status(200).json({
       message: "Account deleted successfully",
+      success: true,
     });
   };
 
@@ -40,6 +43,7 @@ export class AuthController {
 
     res.status(200).json({
       message: "New refreshed token",
+      success: true,
       data,
     });
   };
@@ -51,6 +55,7 @@ export class AuthController {
 
     res.status(200).json({
       message: "User updated successfully",
+      success: true,
       data,
     });
   };
@@ -62,6 +67,7 @@ export class AuthController {
 
     res.status(200).json({
       message: "User fetched successfully",
+      success: true,
       data,
     });
   };

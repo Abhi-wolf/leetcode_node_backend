@@ -7,7 +7,7 @@ export const appErrorHandler = (
   res: Response,
   next: NextFunction,
 ) => {
-  console.log(err);
+  // console.log(err);
 
   res.status(err.statusCode || 500).json({
     success: false,
@@ -21,7 +21,7 @@ export const genericErrorHandler = (
   res: Response,
   next: NextFunction,
 ) => {
-  console.log(err);
+  // console.log(err);
 
   res.status(500).json({
     success: false,

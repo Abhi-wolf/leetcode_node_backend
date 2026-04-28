@@ -7,17 +7,7 @@ import {
 } from "./middlewares/error.middleware";
 import logger from "./config/logger.config";
 import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middleware";
-import {
-  startEvaluationWorkers,
-  stopEvaluationWorkers,
-} from "./workers/evaluation.worker";
-import { pullAllImages } from "./utils/containers/pullImage.util";
 import morganMiddleware from "./middlewares/morgan.middleware";
-import { redisConnection } from "./config/redis.config";
-import { registerServiceInstance } from "./utils/register-service-instance";
-import os from "os";
-
-const systemHost = os.hostname();
 const app = express();
 
 app.use(express.json());
@@ -30,6 +20,7 @@ app.use(attachCorrelationIdMiddleware);
 app.use(morganMiddleware);
 
 app.use("/api/v1", v1Router);
+
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({
@@ -44,18 +35,8 @@ app.use((req: Request, res: Response) => {
 app.use(appErrorHandler);
 app.use(genericErrorHandler);
 
-const serviceInstance = {
-  serviceName: "evaluation-service",
-  instanceId: `evaluation-service-${systemHost}`,
-  host: systemHost,
-  port: serverConfig.PORT,
-};
-
 async function initializeConnection() {
   try {
-    await redisConnection.connect();
-    await startEvaluationWorkers();
-    await pullAllImages();
     logger.info("All connections initialized successfully");
   } catch (error) {
     logger.error("Error initializing connection:", error);
@@ -67,10 +48,8 @@ async function startServer() {
   try {
     await initializeConnection();
 
-    const server = app.listen(serverConfig.PORT, async () => {
-      logger.info(`Evaluation server is running on PORT ${serverConfig.PORT}`);
-      // Registering service instance with registry service
-      await registerServiceInstance(serviceInstance);
+    const server = app.listen(serverConfig.PORT, () => {
+      logger.info(`${serverConfig.SERVICE_NAME} is running on PORT ${serverConfig.PORT}`);
     });
 
     const gracefulShutdown = async (signal: string) => {
@@ -80,7 +59,6 @@ async function startServer() {
         logger.info("HTTP server closed");
 
         try {
-          await stopEvaluationWorkers();
           logger.info("All connections closed successfully");
           process.exit(0);
         } catch (error) {

@@ -7,6 +7,7 @@ type ServerConfig = {
   NODE_ENV: string;
   PROBLEM_SERVICE_URL: string;
   SUBMISSION_SERVICE_URL: string;
+  REGISTRY_SERVICE_URL: string;
   EVALUATION_JOB_NAME: string;
   SUBMISSION_QUEUE_NAME: string;
   STATUS_UPDATE_QUEUE_NAME: string;
@@ -22,7 +23,7 @@ function loadEnv() {
 loadEnv();
 
 export const serverConfig: ServerConfig = {
-  PORT: Number(process.env.PORT) || 3002,
+  PORT: Number(process.env.PORT) || 3020,
   SERVICE_NAME: process.env.SERVICE_NAME || "evaluation-service",
   NODE_ENV: process.env.NODE_ENV || "development",
   REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
@@ -37,7 +38,9 @@ export const serverConfig: ServerConfig = {
     process.env.STATUS_UPDATE_JOB_NAME || "update-submission-status",
 
   PROBLEM_SERVICE_URL:
-    process.env.PROBLEM_SERVICE_URL || "http://localhost:3001/api/v1",
+    process.env.PROBLEM_SERVICE_URL || "http://localhost:3010/api/v1",
   SUBMISSION_SERVICE_URL:
-    process.env.SUBMISSION_SERVICE_URL || "http://localhost:3002/api/v1",
+    process.env.SUBMISSION_SERVICE_URL || "http://localhost:3020/api/v1",
+  REGISTRY_SERVICE_URL:
+    process.env.REGISTRY_SERVICE_URL || "http://localhost:3001/api/v1",
 };

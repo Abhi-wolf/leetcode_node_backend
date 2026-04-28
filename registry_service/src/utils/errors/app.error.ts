@@ -142,6 +142,7 @@ export class NotImplementedError implements AppError {
     }
 }
 
+
 /**
  * Represents a Service Unavailable error (HTTP 503).
  * This error is typically used to indicate that the server is temporarily unable to handle the request.

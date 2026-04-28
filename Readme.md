@@ -8,10 +8,10 @@ This system consists of three main microservices:
 
 | Service                | Port | Description                                                | Database         |
 | ---------------------- | ---- | ---------------------------------------------------------- | ---------------- |
-| **Problem Service**    | 3001 | Manages coding problems, test cases, and problem metadata  | MongoDB          |
-| **Submission Service** | 3002 | Handles code submissions, user data, and submission status | MongoDB          |
-| **Evaluation Service** | 3003 | Executes code in isolated containers and evaluates results | None (stateless) |
-| **Auth Service**       | 3004 | Handles user authentication, authorization, and user data  | PostgreSQL       |
+| **Problem Service**    | 3010 | Manages coding problems, test cases, and problem metadata  | MongoDB          |
+| **Submission Service** | 3020 | Handles code submissions, user data, and submission status | MongoDB          |
+| **Evaluation Service** | 3030 | Executes code in isolated containers and evaluates results | None (stateless) |
+| **Auth Service**       | 3002 | Handles user authentication, authorization, and user data  | PostgreSQL       |
 
 ### 🔧 Supporting Infrastructure
 
@@ -65,15 +65,15 @@ This system consists of three main microservices:
 
 3. **Verify services are running**
    ```bash
-   curl http://localhost:3001/api/v1/health  # Problem Service
-   curl http://localhost:3002/api/v1/health  # Submission Service
-   curl http://localhost:3003/api/v1/health  # Evaluation Service
-   curl http://localhost:3004/api/v1/health  # Auth Service
+   curl http://localhost:3010/api/v1/health  # Problem Service
+   curl http://localhost:3020/api/v1/health  # Submission Service
+   curl http://localhost:3030/api/v1/health  # Evaluation Service
+   curl http://localhost:3002/api/v1/health  # Auth Service
    ```
 
 ## 🔌 API Endpoints
 
-### Problem Service (Port 3001)
+### Problem Service (Port 3010)
 
 - `GET /api/v1/problems/search` - List all problems and search by query
 - `GET /api/v1/problems/:id` - Get problem by ID
@@ -82,17 +82,17 @@ This system consists of three main microservices:
 - `DELETE /api/v1/problems/:id` - Delete problem
 - `GET /api/v1/health` - Health check
 
-### Submission Service (Port 3002)
+### Submission Service (Port 3020)
 
 - `POST /api/v1/submissions` - create new submission
 - `GET /api/v1/submissions/:id` - Get submission details
 - `GET /api/v1/health` - Health check
 
-### Evaluation Service (Port 3003)
+### Evaluation Service (Port 3030)
 
 - `GET /api/v1/health` - Health check
 
-### Auth Service (Port 3004)
+### Auth Service (Port 3002)
 
 - `POST /api/v1/auth/register` - Register a new user
 - `POST /api/v1/auth/login` - Login user

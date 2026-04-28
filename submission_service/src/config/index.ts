@@ -22,7 +22,7 @@ function loadEnv() {
 loadEnv();
 
 export const serverConfig: ServerConfig = {
-  PORT: Number(process.env.PORT) || 3002,
+  PORT: Number(process.env.PORT) || 3020,
   SERVICE_NAME: process.env.SERVICE_NAME || "submission-service",
   NODE_ENV: process.env.NODE_ENV || "development",
   REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
