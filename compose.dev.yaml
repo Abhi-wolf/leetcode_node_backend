@@ -26,7 +26,7 @@ services:
       retries: 3
     networks:
       - backend
-  
+
   postgres:
     image: postgres:16-alpine
     environment:
@@ -44,7 +44,7 @@ services:
       retries: 5
     networks:
       - backend
-    
+
   migrate:
     build:
       context: ./auth_service
@@ -63,7 +63,26 @@ services:
     restart: on-failure
     networks:
       - backend
-  
+
+  api-gateway:
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile.dev
+    ports:
+      - 3000:3000
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
+      - SERVICE_NAME=api-gateway
+      - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
+    volumes:
+      - ./api_gateway/src:/leetcode-server/api-gateway/src
+      - ./api_gateway/package.json:/leetcode-server/api-gateway/package.json
+      - ./api_gateway/tsconfig.json:/leetcode-server/api-gateway/tsconfig.json
+      - /leetcode-server/api-gateway/node_modules
+    networks:
+      - backend
+
   registry-service:
     build:
       context: ./registry_service
@@ -93,6 +112,7 @@ services:
       - DB_URI=mongodb://mongo:27017/leetcode_problem_service
       - NODE_ENV=development
       - SERVICE_NAME=problem-service
+      - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
     volumes:
       - ./problem_service/src:/leetcode-server/problem-service/src
       - ./problem_service/package.json:/leetcode-server/problem-service/package.json
@@ -108,12 +128,17 @@ services:
     build:
       context: ./submission_service
       dockerfile: Dockerfile.dev
+    # ports:
+    #   - 3020:3020
+    deploy:
+      replicas: 3
     ports:
-      - 3020:3020
+      - 3020-3022:3020
     environment:
       - PORT=3020
       - DB_URI=mongodb://mongo:27017/leetcode_submission_service
       - PROBLEM_SERVICE_URL=http://problem-service:3010/api/v1
+      - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
       - REDIS_URL=redis://redis:6379
       - SERVICE_NAME=submission-service
       - NODE_ENV=development
@@ -125,7 +150,7 @@ services:
       - ./submission_service/src:/leetcode-server/submission-service/src
       - ./submission_service/package.json:/leetcode-server/submission-service/package.json
       - ./submission_service/tsconfig.json:/leetcode-server/submission-service/tsconfig.json
-      - /leetcode-server/submission-service/node_modules    # for this
+      - /leetcode-server/submission-service/node_modules # for this
       # Purpose: Prevents host node_modules from overwriting container's node_modules
       # Why: Container needs Linux-specific binaries, host may have different OS/architecture
     depends_on:
@@ -142,10 +167,10 @@ services:
       dockerfile: Dockerfile.dev
     # ports:
     #   - 3030:3030
-    deploy:
-      replicas: 3
-    ports:
-      - 3030-3032:3030
+    # deploy:
+    #   replicas: 3
+    # ports:
+    #   - 3030-3032:3030
     environment:
       - PORT=3030
       - PROBLEM_SERVICE_URL=http://problem-service:3010/api/v1
@@ -186,6 +211,7 @@ services:
       - DB_PASSWORD=postgres
       - JWT_ACCESS_SECRET=ldfjsdfkEKFHWK#&!#*81273
       - JWT_REFRESH_SECRET=ldfjsdfkEKFHWK#&!#*81273
+      - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1/
       - JWT_ACCESS_EXPIRES_IN=1h
       - JWT_REFRESH_EXPIRES_IN=7d
       - PORT=3002
@@ -203,7 +229,6 @@ services:
       - /leetcode-server/auth-service/node_modules
     networks:
       - backend
-
 
   # docker inside docker
   # privileged: true is required for Docker-in-Docker (DinD) because the inner Docker daemon (dockerd) needs

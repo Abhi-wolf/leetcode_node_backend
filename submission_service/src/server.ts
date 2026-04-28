@@ -11,6 +11,10 @@ import morganMiddleware from "./middlewares/morgan.middleware";
 import { startStatusUpdateWorkers, stopStatusUpdateWorkers } from "./workers/status-update.worker";
 import { mongoConnection } from "./config/db.config";
 import { redisConnection } from "./config/redis.config";
+import os from "os";
+import { registerServiceInstance, startHeartbeat } from "./apis/register-service-instance.api";
+
+const systemHost = os.hostname();
 const app = express();
 
 app.use(express.json());
@@ -30,6 +34,13 @@ app.use((req: Request, res: Response) => {
     message: `Route ${req.method} ${req.originalUrl} not found`,
   });
 });
+
+const serviceInstance = {
+  serviceName: "submission-service",
+  instanceId: `submission-service-${systemHost}`,
+  host: systemHost,
+  port: serverConfig.PORT,
+};
 
 /**
  * Add the error handler middleware
@@ -53,8 +64,12 @@ async function startServer() {
   try {
     await initializeConnection();
 
-    const server = app.listen(serverConfig.PORT, () => {
+    const server = app.listen(serverConfig.PORT, async() => {
       logger.info(`Submission service is running on PORT ${serverConfig.PORT}`);
+      // Registering service instance with registry service
+      await registerServiceInstance(serviceInstance);
+      // Start heartbeat
+      startHeartbeat(serviceInstance);
     });
 
     const gracefulShutdown = async (signal: string) => {

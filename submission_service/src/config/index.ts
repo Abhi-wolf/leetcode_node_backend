@@ -12,6 +12,7 @@ type ServerConfig = {
   STATUS_UPDATE_QUEUE_NAME: string;
   STATUS_UPDATE_JOB_NAME: string;
   REDIS_URL: string;
+  REGISTRY_SERVICE_URL: string;
 };
 
 function loadEnv() {
@@ -42,5 +43,8 @@ export const serverConfig: ServerConfig = {
     "mongodb://localhost:27017/leetcode_submission_service",
 
   PROBLEM_SERVICE_URL:
-    process.env.PROBLEM_SERVICE_URL || "http://localhost:3000/api/v1",
+    process.env.PROBLEM_SERVICE_URL || "http://localhost:3010/api/v1",
+
+  REGISTRY_SERVICE_URL:
+    process.env.REGISTRY_SERVICE_URL || "http://localhost:3001/api/v1",
 };

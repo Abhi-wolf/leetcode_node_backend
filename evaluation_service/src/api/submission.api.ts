@@ -5,6 +5,7 @@ import logger from "../config/logger.config";
 import { getCorrelationId } from "../utils/helpers/request.helpers";
 import { ISubmissionData } from "../interfaces/evaluation.interface";
 
+// NOT USING THIS FUNCTION ANYMORE, USING addStatusUpdateJob INSTEAD
 export async function updateSubmission(
   submissionId: string,
   status: string,

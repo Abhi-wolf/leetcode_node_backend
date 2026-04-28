@@ -30,4 +30,25 @@ export class RegistryController {
       data: result,
     });
   };
+
+  getServiceInstances = async (req: Request, res: Response) => {
+    const { serviceName } = req.params;
+    const result = this.registryService.getServiceInstances(serviceName);
+
+    res.status(200).json({
+      message: "Service instances fetched successfully",
+      success: true,
+      data: result,
+    });
+  };
+
+  updateServiceInstanceHeartbeat = async (req: Request, res: Response) => {
+    const { serviceName, instanceId, host, port } = req.body;
+    this.registryService.updateServiceInstanceHeartbeat(serviceName, instanceId, host, port);
+
+    res.status(200).json({
+      message: "Service instance heartbeat updated successfully",
+      success: true,
+    });
+  };
 }

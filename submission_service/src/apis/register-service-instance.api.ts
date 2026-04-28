@@ -1,7 +1,13 @@
 import axios, { AxiosError } from "axios";
 import logger from "../config/logger.config";
-import { ServiceInstance } from "../interfaces/registry-service.interface";
 import { serverConfig } from "../config";
+
+export interface ServiceInstance {
+  serviceName: string;
+  instanceId: string;
+  host: string;
+  port: number;
+}
 
 const MAX_RETRIES = 5;
 const BASE_DELAY = 200; //in milliseconds
@@ -30,15 +36,13 @@ const isRetryableError = (error: AxiosError) => {
 };
 
 export const registerServiceInstance = async (data: ServiceInstance) => {
+  const url = `${serverConfig.REGISTRY_SERVICE_URL}/service-registry`;
+
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      const response = await axios.post(
-        `${serverConfig.REGISTRY_SERVICE_URL}/service-registry`,
-        data,
-        {
-          timeout: 3000,
-        },
-      );
+      const response = await axios.post(url, data, {
+        timeout: 3000,
+      });
 
       if (response.data?.success) {
         logger.info("Service registered successfully", {
@@ -91,4 +95,21 @@ export const registerServiceInstance = async (data: ServiceInstance) => {
   });
 
   return null;
+};
+
+// Add heartbeat mechanism
+export const startHeartbeat = (data: ServiceInstance) => {
+  setInterval(async () => {
+    try {
+      await axios.put(
+        `${serverConfig.REGISTRY_SERVICE_URL}/service-registry/heartbeat`,
+        data,
+        { timeout: 5000 },
+      );
+      logger.debug("Heartbeat sent successfully");
+    } catch (error) {
+      logger.warn("Heartbeat failed, attempting re-registration");
+      await registerServiceInstance(data);
+    }
+  }, 15_000);
 };
