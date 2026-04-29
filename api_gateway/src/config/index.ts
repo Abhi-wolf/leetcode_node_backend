@@ -6,6 +6,7 @@ type ServerConfig = {
   NODE_ENV: string;
   SERVICE_NAME: string;
   REGISTRY_SERVICE_URL: string;
+  REGISTRY_HMAC_SHARED_SECRET: string;
 };
 
 function loadEnv() {
@@ -21,5 +22,8 @@ export const serverConfig: ServerConfig = {
   NODE_ENV: process.env.NODE_ENV || "development",
   REGISTRY_SERVICE_URL:
     process.env.REGISTRY_SERVICE_URL ||
-    "http://localhost:3001/api/v1/service-registry",
+    "http://localhost:3001/api/v1",
+
+  REGISTRY_HMAC_SHARED_SECRET:
+    process.env.REGISTRY_HMAC_SHARED_SECRET || "kfsKE(@#*$oweiKOQWID23984",
 };

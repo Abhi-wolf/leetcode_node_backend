@@ -16,6 +16,7 @@
   "description": "",
   "dependencies": {
     "@types/jsonwebtoken": "^9.0.10",
+    "axios": "^1.15.2",
     "bcrypt": "^6.0.0",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",

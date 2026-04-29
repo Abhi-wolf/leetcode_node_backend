@@ -9,6 +9,12 @@ import logger from "./config/logger.config";
 import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middleware";
 import morganMiddleware from "./middlewares/morgan.middleware";
 import { db } from "./config/db";
+import { registerServiceInstance, startHeartbeat } from "./api/register-service-instance";
+
+import os from "os";
+
+const systemHost = os.hostname();
+
 const app = express();
 
 app.use(express.json());
@@ -45,12 +51,21 @@ async function initializeConnection() {
  }
 }
 
+const serviceInstance = {
+  serviceName: "auth-service",
+  instanceId: `auth-service-${systemHost}`,
+  host: systemHost,
+  port: serverConfig.PORT,
+};
+
 async function startServer() {
   try {
     await initializeConnection();
 
-    const server = app.listen(serverConfig.PORT, () => {
+    const server = app.listen(serverConfig.PORT, async() => {
       logger.info(`Auth server is running on PORT ${serverConfig.PORT}`);
+      await registerServiceInstance(serviceInstance);
+      startHeartbeat(serviceInstance);
     });
 
     const gracefulShutdown = async (signal: string) => {

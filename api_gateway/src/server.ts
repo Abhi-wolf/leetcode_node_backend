@@ -13,20 +13,25 @@ import { refreshAllServices } from "./utils/refresh.services";
 import { startCacheRefresher } from "./utils/refresh.cache";
 const app = express();
 
-app.use(express.json());
+// app.use(express.json());
 
 /**
  * Registering all the routers and their corresponding routes with out app server object.
- */
+*/
 
 app.use(attachCorrelationIdMiddleware);
 app.use(morganMiddleware);
 
-app.use("/api/v1", v1Router);
+app.use("/api/v1", express.json(), v1Router);
 
 app.use(
-  "/api/evaluate",
-  createProxy({ name: "evaluate", serviceName: "evaluation-service" }),
+  "/api/auth",
+  createProxy({ name: "auth", serviceName: "auth-service" }),
+);
+
+app.use(
+  "/api/problems",
+  createProxy({ name: "problems", serviceName: "problem-service" }),
 );
 
 app.use(

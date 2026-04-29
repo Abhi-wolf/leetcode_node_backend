@@ -5,5 +5,5 @@ const instanceService = InstanceFactory.getInstanceService();
 export function startCacheRefresher() {
   setInterval(() => {
     instanceService.cleanupStaleInstances();
-  }, 40_000); // every 40s
+  }, 300000); // every 5 minutes
 }

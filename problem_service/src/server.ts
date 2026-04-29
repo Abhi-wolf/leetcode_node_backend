@@ -9,6 +9,15 @@ import logger from "./config/logger.config";
 import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middleware";
 import morganMiddleware from "./middlewares/morgan.middleware";
 import { mongoConnection } from "./config/db.config";
+
+import os from "os";
+import {
+  registerServiceInstance,
+  startHeartbeat,
+} from "./api/register-service-instance.api";
+
+const systemHost = os.hostname();
+
 const app = express();
 
 app.use(express.json());
@@ -21,7 +30,6 @@ app.use(attachCorrelationIdMiddleware);
 app.use(morganMiddleware);
 
 app.use("/api/v1", v1Router);
-
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({
@@ -46,12 +54,21 @@ async function initializeConnection() {
   }
 }
 
+const serviceInstance = {
+  serviceName: "problem-service",
+  instanceId: `problem-service-${systemHost}`,
+  host: systemHost,
+  port: serverConfig.PORT,
+};
+
 async function startServer() {
   try {
     await initializeConnection();
 
-    const server = app.listen(serverConfig.PORT, () => {
+    const server = app.listen(serverConfig.PORT, async () => {
       logger.info(`Problem service is running on PORT ${serverConfig.PORT}`);
+      await registerServiceInstance(serviceInstance);
+      startHeartbeat(serviceInstance);
     });
 
     const gracefulShutdown = async (signal: string) => {

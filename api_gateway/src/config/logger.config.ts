@@ -12,7 +12,7 @@ const structuredFormat = winston.format.combine(
   winston.format((info) => {
     info.serviceName = serverConfig.SERVICE_NAME;
     info.environment = serverConfig.NODE_ENV;
-    info.correlationId = getCorrelationId();
+    info.correlationId = info.correlationId || getCorrelationId();
     return info;
   })(),
   winston.format.json(),
@@ -24,8 +24,8 @@ const devFormat = winston.format.combine(
   winston.format.timestamp({ format: "MM-DD-YYYY HH:mm:ss" }),
   winston.format.printf(({ level, message, timestamp, ...data }) => {
     const extra = Object.keys(data).length ? JSON.stringify(data, null, 2) : "";
-    const correlationId = getCorrelationId();
-    return `${timestamp} [${level}] ${correlationId} ${message} ${extra}`;
+    const cid = data.correlationId || getCorrelationId();
+    return `${timestamp} [${level}] ${cid} ${message} ${extra}`;
   }),
 );
 

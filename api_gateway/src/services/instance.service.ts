@@ -10,7 +10,7 @@ interface ServiceInstance {
 }
 
 export class InstanceService {
-  private readonly HEARTBEAT_TIMEOUT = 30_000; // 30 seconds
+  private readonly HEARTBEAT_TIMEOUT = 180_000; // 3 minutes
   constructor(private serviceInstanceRepository: InstanceRepository) {}
 
   private verifyServiceSignature() {

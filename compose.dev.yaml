@@ -75,6 +75,7 @@ services:
       - NODE_ENV=development
       - SERVICE_NAME=api-gateway
       - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
+      - REGISTRY_HMAC_SHARED_SECRET="kfsKE(@#*$oweiKOQWID23984"
     volumes:
       - ./api_gateway/src:/leetcode-server/api-gateway/src
       - ./api_gateway/package.json:/leetcode-server/api-gateway/package.json
@@ -93,6 +94,7 @@ services:
       - PORT=3001
       - NODE_ENV=development
       - SERVICE_NAME=registry-service
+      - REGISTRY_HMAC_SHARED_SECRET="kfsKE(@#*$oweiKOQWID23984"
     volumes:
       - ./registry_service/src:/leetcode-server/registry-service/src
       - ./registry_service/package.json:/leetcode-server/registry-service/package.json
@@ -105,14 +107,15 @@ services:
     build:
       context: ./problem_service
       dockerfile: Dockerfile.dev
-    ports:
-      - 3010:3010
+    # ports:
+    #   - 3010:3010
     environment:
       - PORT=3010
       - DB_URI=mongodb://mongo:27017/leetcode_problem_service
       - NODE_ENV=development
       - SERVICE_NAME=problem-service
       - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
+      - REGISTRY_HMAC_SHARED_SECRET="kfsKE(@#*$oweiKOQWID23984"
     volumes:
       - ./problem_service/src:/leetcode-server/problem-service/src
       - ./problem_service/package.json:/leetcode-server/problem-service/package.json
@@ -131,9 +134,9 @@ services:
     # ports:
     #   - 3020:3020
     deploy:
-      replicas: 3
+      replicas: 2
     ports:
-      - 3020-3022:3020
+      - 3020-3021:3020
     environment:
       - PORT=3020
       - DB_URI=mongodb://mongo:27017/leetcode_submission_service
@@ -146,6 +149,7 @@ services:
       - SUBMISSION_QUEUE_NAME=submission_queue
       - STATUS_UPDATE_QUEUE_NAME=status_update_queue
       - STATUS_UPDATE_JOB_NAME=update-submission-status
+      - REGISTRY_HMAC_SHARED_SECRET="kfsKE(@#*$oweiKOQWID23984"
     volumes:
       - ./submission_service/src:/leetcode-server/submission-service/src
       - ./submission_service/package.json:/leetcode-server/submission-service/package.json
@@ -201,8 +205,8 @@ services:
       context: ./auth_service
       dockerfile: Dockerfile.dev
     command: npm run dev
-    ports:
-      - 3002:3002
+    # ports:
+    #   - 3002:3002
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -211,12 +215,13 @@ services:
       - DB_PASSWORD=postgres
       - JWT_ACCESS_SECRET=ldfjsdfkEKFHWK#&!#*81273
       - JWT_REFRESH_SECRET=ldfjsdfkEKFHWK#&!#*81273
-      - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1/
       - JWT_ACCESS_EXPIRES_IN=1h
       - JWT_REFRESH_EXPIRES_IN=7d
       - PORT=3002
       - NODE_ENV=development
       - SERVICE_NAME=auth-service
+      - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
+      - REGISTRY_HMAC_SHARED_SECRET="kfsKE(@#*$oweiKOQWID23984"
     depends_on:
       postgres:
         condition: service_healthy

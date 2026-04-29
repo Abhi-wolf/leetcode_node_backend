@@ -1,4 +1,5 @@
 import logger from "../config/logger.config";
+import { KNOWN_SERVICES } from "../config/serviceInfos";
 import { RegistryRepository } from "../repositories/registry.repository";
 import { BadRequestError } from "../utils/errors/app.error";
 
@@ -6,8 +7,11 @@ export class RegistryService {
   private readonly HEARTBEAT_TIMEOUT = 60_000; // 60 seconds
   constructor(private registryRepository: RegistryRepository) {}
 
-  private verifyServiceSignature() {
-    return true;
+  private isFromKnownService(serviceName: string) {
+    const isKnownService = Object.values(KNOWN_SERVICES).some(
+      (service) => service.serviceName === serviceName,
+    );
+    return isKnownService;
   }
 
   cleanupStaleInstances() {
@@ -18,7 +22,7 @@ export class RegistryService {
     for (const [serviceName, instances] of allServices.entries()) {
       const inActiveInstances = instances.filter(
         (instance) =>
-          now - new Date(instance.lastHeartbeat).getTime() <
+          now - new Date(instance.lastHeartbeat).getTime() >
           this.HEARTBEAT_TIMEOUT,
       );
 
@@ -41,10 +45,8 @@ export class RegistryService {
     host: string,
     port: number,
   ) {
-    const isSignatureValid = this.verifyServiceSignature();
-
-    if (!isSignatureValid) {
-      throw new BadRequestError("Invalid service signature");
+    if (!this.isFromKnownService(serviceName)) {
+      throw new BadRequestError("Invalid service name provided");
     }
 
     const serviceInstances =
@@ -55,8 +57,13 @@ export class RegistryService {
     );
 
     if (isAlreadyPresent) {
-      console.log("INSTANCE ALREADY PRESENT");
-      throw new BadRequestError("Service Instance already registered");
+      this.registryRepository.updateServiceInstanceHeartbeat(
+        serviceName,
+        instanceId,
+        new Date(),
+      );
+
+      return;
     }
 
     const lastHeartbeat = new Date();
@@ -85,6 +92,10 @@ export class RegistryService {
   }
 
   getServiceInstances(serviceName: string) {
+    if (!this.isFromKnownService(serviceName)) {
+      throw new BadRequestError("Invalid service name provided");
+    }
+
     const result = this.registryRepository.getServiceInstances(serviceName);
 
     return result || [];
@@ -96,26 +107,32 @@ export class RegistryService {
     host: string,
     port: number,
   ) {
+    if (!this.isFromKnownService(serviceName)) {
+      throw new BadRequestError("Invalid service name provided");
+    }
 
-    const serviceInstances=this.registryRepository.getServiceInstances(serviceName);
+    const serviceInstances =
+      this.registryRepository.getServiceInstances(serviceName);
 
 
-     const instanceIndex = serviceInstances?.findIndex(
-        (instance) => instance.instanceId === instanceId,
-      );
+    const instanceIndex = serviceInstances?.find(
+      (instance) => instance.instanceId === instanceId,
+    );
 
-      const lastHeartbeat = new Date();
+
+    const lastHeartbeat = new Date();
 
     // found the instance
-    if (instanceIndex !== -1) {
+    if (instanceIndex) {
       this.registryRepository.updateServiceInstanceHeartbeat(
         serviceName,
         instanceId,
-        lastHeartbeat
+        lastHeartbeat,
       );
 
       logger.debug(`Updated heartbeat for ${serviceName}:${instanceId}`);
-    }else {
+
+    } else {
       this.registryRepository.register(
         serviceName,
         instanceId,
@@ -123,7 +140,7 @@ export class RegistryService {
         port,
         lastHeartbeat,
       );
-      
+
       logger.debug(`Registered new instance ${serviceName}:${instanceId}`);
     }
   }

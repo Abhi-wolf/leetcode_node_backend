@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthService } from "../services/auth.services";
+import logger from "../config/logger.config";
 
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -17,6 +18,9 @@ export class AuthController {
 
   login = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
+
+    logger.debug(`Login request for email: ${email}`);
+
     const data = await this.authService.login(email, password);
     res.status(200).json({
       message: "User logged in successfully",

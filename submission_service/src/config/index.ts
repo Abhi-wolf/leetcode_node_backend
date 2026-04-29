@@ -13,6 +13,7 @@ type ServerConfig = {
   STATUS_UPDATE_JOB_NAME: string;
   REDIS_URL: string;
   REGISTRY_SERVICE_URL: string;
+  REGISTRY_HMAC_SHARED_SECRET:string;
 };
 
 function loadEnv() {
@@ -47,4 +48,7 @@ export const serverConfig: ServerConfig = {
 
   REGISTRY_SERVICE_URL:
     process.env.REGISTRY_SERVICE_URL || "http://localhost:3001/api/v1",
+    
+  REGISTRY_HMAC_SHARED_SECRET:
+    process.env.REGISTRY_HMAC_SHARED_SECRET || "kfsKE(@#*$oweiKOQWID23984",
 };

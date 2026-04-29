@@ -11,8 +11,8 @@ import morganMiddleware from "./middlewares/morgan.middleware";
 import { startStatusUpdateWorkers, stopStatusUpdateWorkers } from "./workers/status-update.worker";
 import { mongoConnection } from "./config/db.config";
 import { redisConnection } from "./config/redis.config";
-import os from "os";
 import { registerServiceInstance, startHeartbeat } from "./apis/register-service-instance.api";
+import os from "os";
 
 const systemHost = os.hostname();
 const app = express();

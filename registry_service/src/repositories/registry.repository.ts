@@ -32,7 +32,7 @@ export class RegistryRepository {
   }
 
   getServiceInstances(serviceName: string) {
-    return this.registry.get(serviceName);
+    return this.registry.get(serviceName) || [];
   }
 
   updateServiceInstanceHeartbeat(

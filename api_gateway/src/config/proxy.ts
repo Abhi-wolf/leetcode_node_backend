@@ -18,8 +18,10 @@ export const createProxy = (serviceDetail: {
 
     router: () => {
       try {
-        const instance= getNextInstance(serviceDetail.serviceName);
-        logger.debug(`Redirecting request to ${instance} instance of ${serviceDetail.serviceName}`)
+        const instance = getNextInstance(serviceDetail.serviceName);
+        logger.debug(
+          `Redirecting request to ${instance} instance of ${serviceDetail.serviceName}`,
+        );
         return instance;
       } catch (error) {
         console.error("Error getting next instance:", error);
@@ -44,6 +46,11 @@ export const createProxy = (serviceDetail: {
         // logger.debug(
         //   `Original request: ${req.url} -> Transformed to: ${proxyReq.path}`,
         // );
+
+        const correlationId = req.headers["x-correlation-id"];
+        if (correlationId) {
+          proxyReq.setHeader("x-correlation-id", correlationId);
+        }
 
         const expressReq = req as any;
         logger.debug(
