@@ -1,6 +1,7 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { InstanceFactory } from "../factories/instance.factory";
 import logger from "./logger.config";
+import { ServiceUnavailableError } from "../utils/errors/app.error";
 
 const instanceService = InstanceFactory.getInstanceService();
 
@@ -25,7 +26,9 @@ export const createProxy = (serviceDetail: {
         return instance;
       } catch (error) {
         console.error("Error getting next instance:", error);
-        throw new Error("Failed to get next instance");
+        throw new ServiceUnavailableError(
+          "Service temporarily unavailable. Please try again later.",
+        );
       }
     },
 

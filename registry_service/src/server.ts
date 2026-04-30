@@ -10,8 +10,6 @@ import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middlew
 import morganMiddleware from "./middlewares/morgan.middleware";
 const app = express();
 
-app.use(express.json());
-
 /**
  * Registering all the routers and their corresponding routes with out app server object.
  */
@@ -19,8 +17,15 @@ app.use(express.json());
 app.use(attachCorrelationIdMiddleware);
 app.use(morganMiddleware);
 
-app.use("/api/v1", v1Router);
+app.use(
+  express.json({
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf.toString(); // capture raw body before parsing
+    },
+  }),
+);
 
+app.use("/api/v1", v1Router);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({
@@ -49,7 +54,9 @@ async function startServer() {
     await initializeConnection();
 
     const server = app.listen(serverConfig.PORT, () => {
-      logger.info(`${serverConfig.SERVICE_NAME} is running on PORT ${serverConfig.PORT}`);
+      logger.info(
+        `${serverConfig.SERVICE_NAME} is running on PORT ${serverConfig.PORT}`,
+      );
     });
 
     const gracefulShutdown = async (signal: string) => {

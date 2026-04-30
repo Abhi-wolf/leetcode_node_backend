@@ -17,7 +17,7 @@ const app = express();
 
 /**
  * Registering all the routers and their corresponding routes with out app server object.
-*/
+ */
 
 app.use(attachCorrelationIdMiddleware);
 app.use(morganMiddleware);
@@ -112,7 +112,5 @@ async function startServer() {
     process.exit(1);
   }
 }
-
-
 
 startServer();

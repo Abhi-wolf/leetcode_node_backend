@@ -17,14 +17,14 @@ import { redisConnection } from "./config/redis.config";
 
 const app = express();
 
-app.use(express.json());
-
 /**
  * Registering all the routers and their corresponding routes with out app server object.
  */
 
 app.use(attachCorrelationIdMiddleware);
 app.use(morganMiddleware);
+
+app.use(express.json());
 
 app.use("/api/v1", v1Router);
 

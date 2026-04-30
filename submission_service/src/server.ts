@@ -8,16 +8,20 @@ import {
 import logger from "./config/logger.config";
 import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middleware";
 import morganMiddleware from "./middlewares/morgan.middleware";
-import { startStatusUpdateWorkers, stopStatusUpdateWorkers } from "./workers/status-update.worker";
+import {
+  startStatusUpdateWorkers,
+  stopStatusUpdateWorkers,
+} from "./workers/status-update.worker";
 import { mongoConnection } from "./config/db.config";
 import { redisConnection } from "./config/redis.config";
-import { registerServiceInstance, startHeartbeat } from "./apis/register-service-instance.api";
+import {
+  registerServiceInstance,
+  startHeartbeat,
+} from "./apis/register-service-instance.api";
 import os from "os";
 
 const systemHost = os.hostname();
 const app = express();
-
-app.use(express.json());
 
 /**
  * Registering all the routers and their corresponding routes with out app server object.
@@ -25,6 +29,8 @@ app.use(express.json());
 
 app.use(attachCorrelationIdMiddleware);
 app.use(morganMiddleware);
+
+app.use(express.json());
 
 app.use("/api/v1", v1Router);
 
@@ -64,7 +70,7 @@ async function startServer() {
   try {
     await initializeConnection();
 
-    const server = app.listen(serverConfig.PORT, async() => {
+    const server = app.listen(serverConfig.PORT, async () => {
       logger.info(`Submission service is running on PORT ${serverConfig.PORT}`);
       // Registering service instance with registry service
       await registerServiceInstance(serviceInstance);
