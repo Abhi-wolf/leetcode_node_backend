@@ -20,5 +20,5 @@ export const serverConfig: ServerConfig = {
   SERVICE_NAME: process.env.SERVICE_NAME || "registry_service",
   NODE_ENV: process.env.NODE_ENV || "development",
   REGISTRY_HMAC_SHARED_SECRET:
-    process.env.REGISTRY_HMAC_SHARED_SECRET || "kfsKE(@#*$oweiKOQWID23984",
+    process.env.REGISTRY_HMAC_SHARED_SECRET || "kfsKE(@#*oweiKOQWID23984",
 };

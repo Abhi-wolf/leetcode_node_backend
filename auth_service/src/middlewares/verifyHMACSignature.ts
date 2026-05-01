@@ -15,31 +15,42 @@ import crypto from "crypto";
  * Raw body = the exact string that was signed. No parsing, no re-stringifying, no risk of mismatch
  */
 
+const secret = serverConfig.API_GATEWAY_HMAC_SHARED_SECRET;
+
 export const verifyHAMCSignature = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const signHeader: string =
-    (req.headers["x-registry-signature"] as string) || "";
-  const secret = serverConfig.REGISTRY_HMAC_SHARED_SECRET;
+  const apiGatewayHMACSignature: string =
+    (req.headers["x-api-gateway-signature"] as string) || "";
 
-  if (!signHeader) {
-    console.log("HMAC verifyHMACSingnature= Missing necessary headers");
+  const timestamp: string =
+    (req.headers["x-api-gateway-timestamp"] as string) || "";
 
+  if (!apiGatewayHMACSignature || !timestamp) {
     res.status(401).json({
       success: false,
-      message: "Missing x-registry-signature header",
+      message: "Missing required headers",
     });
 
     return;
   }
 
-  const body = (req as any).body;
-  const expectedSignature = generateHMACSignature(JSON.stringify(body), secret);
+  const payload = {
+    method: req.method,
+    path: req.originalUrl,
+    timestamp,
+    body: req.body || {},
+  };
+
+  const expectedSignature = generateHMACSignature(
+    JSON.stringify(payload),
+    secret,
+  );
 
   const isValid = crypto.timingSafeEqual(
-    Buffer.from(signHeader),
+    Buffer.from(apiGatewayHMACSignature),
     Buffer.from(expectedSignature),
   );
 
@@ -53,7 +64,7 @@ export const verifyHAMCSignature = (
   }
 
   // checking if the request is not older than 5 minutes
-  if (Date.now() - parseInt(req.body.timestamp) > 5 * 60 * 1000) {
+  if (Date.now() - parseInt(timestamp) > 5 * 60 * 1000) {
     res.status(401).json({
       success: false,
       message: "Request expired",

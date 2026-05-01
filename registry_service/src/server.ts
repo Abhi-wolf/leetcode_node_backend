@@ -8,6 +8,7 @@ import {
 import logger from "./config/logger.config";
 import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middleware";
 import morganMiddleware from "./middlewares/morgan.middleware";
+import { verifyHAMCSignature } from "./middlewares/verifyHMACSingnature";
 const app = express();
 
 /**
@@ -17,13 +18,9 @@ const app = express();
 app.use(attachCorrelationIdMiddleware);
 app.use(morganMiddleware);
 
-app.use(
-  express.json({
-    verify: (req: any, _res, buf) => {
-      req.rawBody = buf.toString(); // capture raw body before parsing
-    },
-  }),
-);
+app.use(express.json());
+
+app.use(verifyHAMCSignature);
 
 app.use("/api/v1", v1Router);
 

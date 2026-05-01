@@ -7,17 +7,20 @@ import {
 } from "./middlewares/error.middleware";
 import logger from "./config/logger.config";
 import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middleware";
-import morganMiddleware from "./middlewares/morgan.middleware";
+// import morganMiddleware from "./middlewares/morgan.middleware";
 import { db } from "./config/db";
-import { registerServiceInstance, startHeartbeat } from "./api/register-service-instance";
+import {
+  registerServiceInstance,
+  startHeartbeat,
+} from "./api/register-service-instance";
 
 import os from "os";
+import morganMiddleware from "./middlewares/morgan.middleware";
+import { verifyHAMCSignature } from "./middlewares/verifyHMACSignature";
 
 const systemHost = os.hostname();
 
 const app = express();
-
-app.use(express.json());
 
 /**
  * Registering all the routers and their corresponding routes with out app server object.
@@ -25,6 +28,9 @@ app.use(express.json());
 
 app.use(attachCorrelationIdMiddleware);
 app.use(morganMiddleware);
+
+app.use(express.json());
+app.use(verifyHAMCSignature);
 
 app.use("/api/v1", v1Router);
 
@@ -43,12 +49,12 @@ app.use(appErrorHandler);
 app.use(genericErrorHandler);
 
 async function initializeConnection() {
- try {
-  await db.checkConnection();
- } catch (error) {
-  logger.error("Error initializing connection:", error);
-  throw error;
- }
+  try {
+    await db.checkConnection();
+  } catch (error) {
+    logger.error("Error initializing connection:", error);
+    throw error;
+  }
 }
 
 const serviceInstance = {
@@ -62,7 +68,7 @@ async function startServer() {
   try {
     await initializeConnection();
 
-    const server = app.listen(serverConfig.PORT, async() => {
+    const server = app.listen(serverConfig.PORT, async () => {
       logger.info(`Auth server is running on PORT ${serverConfig.PORT}`);
       await registerServiceInstance(serviceInstance);
       startHeartbeat(serviceInstance);
@@ -109,5 +115,3 @@ async function startServer() {
 }
 
 startServer();
-
-

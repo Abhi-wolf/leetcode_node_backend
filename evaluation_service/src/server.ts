@@ -14,6 +14,7 @@ import {
 // import { pullAllImages } from "./utils/containers/pullImage.util";
 import morganMiddleware from "./middlewares/morgan.middleware";
 import { redisConnection } from "./config/redis.config";
+import { pullAllImages } from "./utils/containers/pullImage.util";
 
 const app = express();
 
@@ -45,7 +46,7 @@ async function initializeConnection() {
   try {
     await redisConnection.connect();
     await startEvaluationWorkers();
-    // await pullAllImages();   //TODO: remove this commnet before commiting
+    await pullAllImages();
     logger.info("All connections initialized successfully");
   } catch (error) {
     logger.error("Error initializing connection:", error);

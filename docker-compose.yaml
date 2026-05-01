@@ -94,6 +94,8 @@ services:
       - NODE_ENV=production
       - SERVICE_NAME=api-gateway
       - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
+      - REGISTRY_HMAC_SHARED_SECRET=kfsKE(@#*oweiKOQWID23984
+      - API_GATEWAY_HMAC_SHARED_SECRET=3049sKKJDIWEO2983023909234
     networks:
       - backend
 
@@ -107,6 +109,7 @@ services:
       - PORT=3001
       - NODE_ENV=production
       - SERVICE_NAME=registry-service
+      - REGISTRY_HMAC_SHARED_SECRET=kfsKE(@#*oweiKOQWID23984
     networks:
       - backend
 
@@ -123,6 +126,8 @@ services:
       - NODE_ENV=development
       - SERVICE_NAME=problem-service
       - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1/
+      - REGISTRY_HMAC_SHARED_SECRET=kfsKE(@#*oweiKOQWID23984
+      - API_GATEWAY_HMAC_SHARED_SECRET=3049sKKJDIWEO2983023909234
     depends_on:
       mongo:
         condition: service_healthy
@@ -147,6 +152,8 @@ services:
       - SUBMISSION_QUEUE_NAME=submission_queue
       - STATUS_UPDATE_QUEUE_NAME=status_update_queue
       - STATUS_UPDATE_JOB_NAME=update-submission-status
+      - REGISTRY_HMAC_SHARED_SECRET=kfsKE(@#*oweiKOQWID23984
+      - API_GATEWAY_HMAC_SHARED_SECRET=3049sKKJDIWEO2983023909234
     depends_on:
       mongo:
         condition: service_healthy
@@ -195,12 +202,14 @@ services:
       - DB_PASSWORD=postgres
       - JWT_ACCESS_SECRET=ldfjsdfkEKFHWK#&!#*81273
       - JWT_REFRESH_SECRET=ldfjsdfkEKFHWK#&!#*81273
-      - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1/
       - JWT_ACCESS_EXPIRES_IN=1h
       - JWT_REFRESH_EXPIRES_IN=7d
       - PORT=3002
       - NODE_ENV=production
       - SERVICE_NAME=auth-service
+      - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
+      - REGISTRY_HMAC_SHARED_SECRET=kfsKE(@#*oweiKOQWID23984
+      - API_GATEWAY_HMAC_SHARED_SECRET=3049sKKJDIWEO2983023909234
     depends_on:
       postgres:
         condition: service_healthy

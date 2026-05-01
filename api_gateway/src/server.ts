@@ -22,7 +22,9 @@ const app = express();
 app.use(attachCorrelationIdMiddleware);
 app.use(morganMiddleware);
 
-app.use("/api/v1", express.json(), v1Router);
+app.use(express.json());
+
+app.use("/api/v1", v1Router);
 
 app.use(
   "/api/auth",

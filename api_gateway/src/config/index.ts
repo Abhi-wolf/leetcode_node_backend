@@ -7,6 +7,7 @@ type ServerConfig = {
   SERVICE_NAME: string;
   REGISTRY_SERVICE_URL: string;
   REGISTRY_HMAC_SHARED_SECRET: string;
+  API_GATEWAY_HMAC_SHARED_SECRET: string;
 };
 
 function loadEnv() {
@@ -25,5 +26,8 @@ export const serverConfig: ServerConfig = {
     "http://localhost:3001/api/v1",
 
   REGISTRY_HMAC_SHARED_SECRET:
-    process.env.REGISTRY_HMAC_SHARED_SECRET || "kfsKE(@#*$oweiKOQWID23984",
+    process.env.REGISTRY_HMAC_SHARED_SECRET || "kfsKE(@#*oweiKOQWID23984",
+  
+  API_GATEWAY_HMAC_SHARED_SECRET:
+    process.env.API_GATEWAY_HMAC_SHARED_SECRET || "3049sKKJDIWEO2983023909234",
 };

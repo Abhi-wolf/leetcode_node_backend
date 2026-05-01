@@ -5,7 +5,7 @@ import { KNOWN_SERVICES } from "../config/servicesInfos";
 import { InstanceFactory } from "../factories/instance.factory";
 import { generateHMACSignature } from "./generateHMACSignature";
 
-const CACHE_REFRESH_INTERVAL_MS = 160000;
+const CACHE_REFRESH_INTERVAL_MS = 90000;
 
 const instanceService = InstanceFactory.getInstanceService();
 

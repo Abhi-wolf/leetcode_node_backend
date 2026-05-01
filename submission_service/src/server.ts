@@ -19,6 +19,7 @@ import {
   startHeartbeat,
 } from "./apis/register-service-instance.api";
 import os from "os";
+import { verifyHAMCSignature } from "./middlewares/verifyHMACSignature";
 
 const systemHost = os.hostname();
 const app = express();
@@ -31,6 +32,7 @@ app.use(attachCorrelationIdMiddleware);
 app.use(morganMiddleware);
 
 app.use(express.json());
+app.use(verifyHAMCSignature)
 
 app.use("/api/v1", v1Router);
 

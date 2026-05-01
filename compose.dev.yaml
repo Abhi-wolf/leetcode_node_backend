@@ -75,7 +75,8 @@ services:
       - NODE_ENV=development
       - SERVICE_NAME=api-gateway
       - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
-      - REGISTRY_HMAC_SHARED_SECRET="kfsKE(@#*$oweiKOQWID23984"
+      - REGISTRY_HMAC_SHARED_SECRET=kfsKE(@#*oweiKOQWID23984
+      - API_GATEWAY_HMAC_SHARED_SECRET=3049sKKJDIWEO2983023909234
     volumes:
       - ./api_gateway/src:/leetcode-server/api-gateway/src
       - ./api_gateway/package.json:/leetcode-server/api-gateway/package.json
@@ -94,7 +95,7 @@ services:
       - PORT=3001
       - NODE_ENV=development
       - SERVICE_NAME=registry-service
-      - REGISTRY_HMAC_SHARED_SECRET="kfsKE(@#*$oweiKOQWID23984"
+      - REGISTRY_HMAC_SHARED_SECRET=kfsKE(@#*oweiKOQWID23984
     volumes:
       - ./registry_service/src:/leetcode-server/registry-service/src
       - ./registry_service/package.json:/leetcode-server/registry-service/package.json
@@ -115,7 +116,8 @@ services:
       - NODE_ENV=development
       - SERVICE_NAME=problem-service
       - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
-      - REGISTRY_HMAC_SHARED_SECRET="kfsKE(@#*$oweiKOQWID23984"
+      - REGISTRY_HMAC_SHARED_SECRET=kfsKE(@#*oweiKOQWID23984
+      - API_GATEWAY_HMAC_SHARED_SECRET=3049sKKJDIWEO2983023909234
     volumes:
       - ./problem_service/src:/leetcode-server/problem-service/src
       - ./problem_service/package.json:/leetcode-server/problem-service/package.json
@@ -149,7 +151,8 @@ services:
       - SUBMISSION_QUEUE_NAME=submission_queue
       - STATUS_UPDATE_QUEUE_NAME=status_update_queue
       - STATUS_UPDATE_JOB_NAME=update-submission-status
-      - REGISTRY_HMAC_SHARED_SECRET="kfsKE(@#*$oweiKOQWID23984"
+      - REGISTRY_HMAC_SHARED_SECRET=kfsKE(@#*oweiKOQWID23984
+      - API_GATEWAY_HMAC_SHARED_SECRET=3049sKKJDIWEO2983023909234
     volumes:
       - ./submission_service/src:/leetcode-server/submission-service/src
       - ./submission_service/package.json:/leetcode-server/submission-service/package.json
@@ -221,7 +224,8 @@ services:
       - NODE_ENV=development
       - SERVICE_NAME=auth-service
       - REGISTRY_SERVICE_URL=http://registry-service:3001/api/v1
-      - REGISTRY_HMAC_SHARED_SECRET="kfsKE(@#*$oweiKOQWID23984"
+      - REGISTRY_HMAC_SHARED_SECRET=kfsKE(@#*oweiKOQWID23984
+      - API_GATEWAY_HMAC_SHARED_SECRET=3049sKKJDIWEO2983023909234
     depends_on:
       postgres:
         condition: service_healthy

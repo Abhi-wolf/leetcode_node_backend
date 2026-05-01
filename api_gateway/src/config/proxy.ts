@@ -1,9 +1,15 @@
-import { createProxyMiddleware } from "http-proxy-middleware";
+import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import { InstanceFactory } from "../factories/instance.factory";
 import logger from "./logger.config";
-import { ServiceUnavailableError } from "../utils/errors/app.error";
+import {
+  InternalServerError,
+  ServiceUnavailableError,
+} from "../utils/errors/app.error";
+import { generateHMACSignature } from "../utils/generateHMACSignature";
+import { serverConfig } from ".";
 
 const instanceService = InstanceFactory.getInstanceService();
+const apiGatewayHmacSharedSecret = serverConfig.API_GATEWAY_HMAC_SHARED_SECRET;
 
 const getNextInstance = (serviceName: string) => {
   const nextInstance = instanceService.getNextRoundRobinInstance(serviceName);
@@ -45,20 +51,50 @@ export const createProxy = (serviceDetail: {
     timeout: 5000,
 
     on: {
-      proxyReq: (proxyReq, req) => {
-        // logger.debug(
-        //   `Original request: ${req.url} -> Transformed to: ${proxyReq.path}`,
-        // );
+      proxyReq: (proxyReq, req: any) => {
+        try {
+          const timestamp = Date.now().toString();
 
-        const correlationId = req.headers["x-correlation-id"];
-        if (correlationId) {
-          proxyReq.setHeader("x-correlation-id", correlationId);
+          const payload = {
+            method: req.method,
+            path: proxyReq.path,
+            timestamp,
+            body: req.body || {},
+          };
+
+          const signature = generateHMACSignature(
+            JSON.stringify(payload),
+            apiGatewayHmacSharedSecret,
+          );
+
+          const correlationId = req.headers["x-correlation-id"];
+          if (correlationId) {
+            proxyReq.setHeader("x-correlation-id", correlationId);
+          }
+
+          const expressReq = req as any;
+          logger.debug(
+            `Original request: ${expressReq.originalUrl} -> Transformed to: ${proxyReq.path}`,
+          );
+
+          proxyReq.removeHeader("x-api-gateway-signature");
+          proxyReq.removeHeader("x-api-gateway-timestamp");
+
+          proxyReq.setHeader("x-api-gateway-signature", signature);
+          proxyReq.setHeader("x-api-gateway-timestamp", timestamp.toString());
+
+          console.log("Signature:", signature, "payload:", payload);
+
+          fixRequestBody(proxyReq, req);
+        } catch (error) {
+          logger.error(
+            `Error in proxyReq for ${serviceDetail.serviceName}:`,
+            error,
+          );
+          throw new InternalServerError(
+            (error as Error).message || "Failed to process request",
+          );
         }
-
-        const expressReq = req as any;
-        logger.debug(
-          `Original request: ${expressReq.originalUrl} -> Transformed to: ${proxyReq.path}`,
-        );
       },
 
       error: (err) => {
