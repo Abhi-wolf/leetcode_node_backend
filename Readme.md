@@ -91,35 +91,32 @@ All client requests should go through the **API Gateway** at `http://localhost:3
 ### API Gateway (Port 3000)
 
 - `GET /api/v1/health` - Gateway health check
-- `GET /api/v1/problem/*` - Routes to Problem Service
-- `GET /api/v1/submission/*` - Routes to Submission Service
-- `POST /api/v1/submission/*` - Routes to Submission Service
-- `GET /api/v1/auth/*` - Routes to Auth Service
-- `POST /api/v1/auth/*` - Routes to Auth Service
+- `GET /api/problem/*` - Routes to Problem Service
+- `GET /api/submission/*` - Routes to Submission Service
+- `POST /api/submission/*` - Routes to Submission Service
+- `GET /api/auth/*` - Routes to Auth Service
+- `POST /api/auth/*` - Routes to Auth Service
 
 ### Problem Service (via Gateway)
 
-- `GET /api/v1/problem/problems/search` - List all problems and search by query
-- `GET /api/v1/problem/problems/:id` - Get problem by ID
-- `POST /api/v1/problem/problems` - Create new problem
-- `PUT /api/v1/problem/problems/:id` - Update problem
-- `DELETE /api/v1/problem/problems/:id` - Delete problem
-- `GET /api/v1/problem/health` - Health check
+- `GET /api/problems/search` - List all problems and search by query
+- `GET /api/problems/:id` - Get problem by ID
+- `POST /api/problems` - Create new problem
+- `PUT /api/problems/:id` - Update problem
+- `DELETE /api/problems/:id` - Delete problem
 
 ### Submission Service (via Gateway)
 
-- `POST /api/v1/submission/submissions` - Create new submission
-- `GET /api/v1/submission/submissions/:id` - Get submission details
-- `GET /api/v1/submission/health` - Health check
+- `POST /api/submissions` - Create new submission
+- `GET /api/submissions/:id` - Get submission details
 
 ### Auth Service (via Gateway)
 
-- `POST /api/v1/auth/auth/register` - Register a new user
-- `POST /api/v1/auth/auth/login` - Login user
-- `GET /api/v1/auth/auth/:id` - Get user details
-- `PUT /api/v1/auth/auth/refreshToken` - Refresh access token
-- `PATCH /api/v1/auth/auth/:id` - Update user details
-- `GET /api/v1/auth/auth/health` - Health check
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Login user
+- `GET /api/auth/:id` - Get user details
+- `PUT /api/auth/refreshToken` - Refresh access token
+- `PATCH /api/auth/:id` - Update user details
 
 ## ⚙️ Configuration
 
