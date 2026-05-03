@@ -7,6 +7,11 @@ import {
 } from "../../validators/problem.validator";
 import { ProblemFactory } from "../../factories/problem.factory";
 import { verifyHAMCSignature } from "../../middlewares/verifyHMACSignature";
+import {
+  authorize,
+  authorizeRole,
+} from "../../middlewares/authorization.middleware";
+import { UserRole } from "../../types/user.roles.interface";
 
 // Create a new router instance
 const problemRouter = express.Router();
@@ -18,6 +23,8 @@ const problemController = ProblemFactory.getProblemController();
 problemRouter.post(
   "/",
   verifyHAMCSignature,
+  authorize,
+  authorizeRole(UserRole.PROBLEM_SETTER),
   validateRequestBody(createProblemSchema),
   problemController.createProblem,
 );
@@ -29,6 +36,7 @@ problemRouter.post(
 problemRouter.get(
   "/search",
   verifyHAMCSignature,
+  authorize,
   validateQueryParams(searchProblemsSchema),
   problemController.searchProblems,
 );
@@ -41,11 +49,19 @@ problemRouter.get("/:id", problemController.getProblemById);
 problemRouter.put(
   "/:id",
   verifyHAMCSignature,
+  authorize,
+  authorizeRole(UserRole.PROBLEM_SETTER),
   validateRequestBody(updateProblemSchema),
   problemController.updateProblem,
 );
 
 // DELETE /problems/:id - Delete problem by ID
-problemRouter.delete("/:id",verifyHAMCSignature, problemController.deleteProblem);
+problemRouter.delete(
+  "/:id",
+  verifyHAMCSignature,
+  authorize,
+  authorizeRole(UserRole.ADMIN),
+  problemController.deleteProblem,
+);
 
 export default problemRouter;

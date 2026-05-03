@@ -9,6 +9,7 @@ type ServerConfig = {
   REGISTRY_SERVICE_URL: string;
   REGISTRY_HMAC_SHARED_SECRET: string;
   API_GATEWAY_HMAC_SHARED_SECRET: string;
+  JWT_ACCESS_SECRET: string;
 };
 
 function loadEnv() {
@@ -33,4 +34,6 @@ export const serverConfig: ServerConfig = {
 
   API_GATEWAY_HMAC_SHARED_SECRET:
     process.env.API_GATEWAY_HMAC_SHARED_SECRET || "3049sKKJDIWEO2983023909234",
+
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || "ldfjsdfkEKFHWK#&!#*81273",
 };

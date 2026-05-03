@@ -14,7 +14,7 @@ import {
 } from "../utils/errors/app.error";
 
 export interface ISubmissionService {
-  createSubmission(submissionData: Partial<ISubmission>): Promise<ISubmission>;
+  createSubmission(submissionData: Partial<ISubmission>,userId:string): Promise<ISubmission>;
   getSubmissionById(id: string): Promise<ISubmission | null>;
   updateSubmissionStatus(
     id: string,
@@ -23,9 +23,9 @@ export interface ISubmissionService {
   ): Promise<ISubmission | null>;
   getSubmissionsByProblemId(
     problemId: string,
+    userId: string,
     limit?: number,
     page?: number,
-    userId?: string,
   ): Promise<{ submissions: ISubmission[]; total: number; page: number }>;
   deleteSubmissionById(id: string): Promise<boolean>;
 }
@@ -39,6 +39,7 @@ export class SubmissionService implements ISubmissionService {
 
   async createSubmission(
     submissionData: Partial<ISubmission>,
+    userId: string,
   ): Promise<ISubmission> {
     // check if the problem exists
     if (!submissionData.problemId) {
@@ -63,7 +64,7 @@ export class SubmissionService implements ISubmissionService {
     }
 
     //   add the submission payload to the database
-    const submission = await this.submissionRepository.create(submissionData);
+    const submission = await this.submissionRepository.create(submissionData,userId);
 
     //   submission to redis queue for processing
     const jobId = await addSubmissionJob({
@@ -122,9 +123,9 @@ export class SubmissionService implements ISubmissionService {
 
   async getSubmissionsByProblemId(
     problemId: string,
+    userId:string,
     limit: number = 5,
     page: number = 1,
-    userId?: string,
   ): Promise<{ submissions: ISubmission[]; total: number; page: number }> {
     // ensures page is never < 1
     const safePage = Math.max(1, page);
@@ -132,6 +133,7 @@ export class SubmissionService implements ISubmissionService {
 
     const result = await this.submissionRepository.findByProblemId(
       problemId,
+      userId,
       limit,
       skip,
     );

@@ -10,7 +10,7 @@ import {
   InternalServerError,
   NotFoundError,
 } from "../utils/errors/app.error";
-import { CreateUserDto, UserRole } from "../interfaces/user.interface";
+import { CreateUserDto, UserRole } from "../types/user.interface";
 import ms from "ms";
 import { Database } from "../config/db";
 
@@ -19,17 +19,22 @@ export class AuthService {
     private userRepository: UserRepository,
     private refreshTokenRepository: RefreshTokenRepository,
     private db: Database,
-  ) { }
+  ) {}
 
   /**
    * Generate access and refresh tokens
    * @param user - User objectAuthSer
    * @returns { accessToken: string, refreshToken: string } - Generated tokens
    */
-  private generateAccessToken(user: { id: string; email: string }) {
+  private generateAccessToken(user: {
+    id: string;
+    email: string;
+    roles: string[];
+  }) {
     const payload: jwt.JwtPayload = {
       userId: user.id,
       email: user.email,
+      roles: user.roles,
     };
 
     try {
@@ -211,6 +216,7 @@ export class AuthService {
     const accessToken = this.generateAccessToken({
       id: user.id,
       email: user.email,
+      roles: user.roles,
     });
 
     const refreshToken = this.generateRefreshToken();
@@ -282,9 +288,12 @@ export class AuthService {
       await this.db.withTransaction(async (client) => {
         await this.refreshTokenRepository.revokeAllUserTokens(id, client);
 
-        updatedUser = await this.userRepository.update(id, updateFields, client);
+        updatedUser = await this.userRepository.update(
+          id,
+          updateFields,
+          client,
+        );
       });
-
     } else {
       updatedUser = await this.userRepository.update(id, updateFields);
     }

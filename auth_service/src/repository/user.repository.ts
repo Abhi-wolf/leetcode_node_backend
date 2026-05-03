@@ -1,5 +1,5 @@
 import { Database } from "../config/db";
-import { CreateUserDto, User } from "../interfaces/user.interface";
+import { CreateUserDto, User } from "../types/user.interface";
 import { parsePgArray } from "../utils/parsePgArray";
 import { PoolClient, QueryResult, QueryResultRow } from "pg";
 

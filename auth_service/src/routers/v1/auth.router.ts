@@ -2,12 +2,12 @@ import express from "express";
 import { validateRequestBody } from "../../validators";
 import { AuthFactory } from "../../factory/auth.factory";
 import {
-  deleteAccountSchema,
   loginSchema,
   refreshTokenSchema,
   registerSchema,
   updateUserSchema,
 } from "../../validators/auth.validator";
+import { authorize } from "../../middlewares/authorization.middleware";
 
 const authController = AuthFactory.getAuthController();
 
@@ -26,11 +26,11 @@ authRouter.post(
 
 // TODO: remove this or make it a authorized route with proper validation and remove the deleteAccountSchema
 // Only for development purposes
-authRouter.delete(
-  "/deleteAccount",
-  validateRequestBody(deleteAccountSchema),
-  authController.deleteAccount,
-);
+// authRouter.delete(
+//   "/deleteAccount",
+//   validateRequestBody(deleteAccountSchema),
+//   authController.deleteAccount,
+// );
 
 authRouter.put(
   "/refreshToken",
@@ -38,12 +38,14 @@ authRouter.put(
   authController.refreshToken,
 );
 
+authRouter.get("/me", authorize, authController.getMe);
+
 authRouter.patch(
   "/:id",
+  authorize,
   validateRequestBody(updateUserSchema),
   authController.updateUser,
 );
 
-authRouter.get("/:id", authController.getMe);
 
 export default authRouter;

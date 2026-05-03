@@ -1,6 +1,6 @@
 import { serverConfig } from "../config";
 import logger from "../config/logger.config";
-import { ISubmissionData } from "../interfaces/evaluation.interface";
+import { ISubmissionData } from "../types/evaluation.interface";
 import { statusUpdateQueue } from "../queues/status-update.queue";
 import { getCorrelationId } from "../utils/helpers/request.helpers";
 

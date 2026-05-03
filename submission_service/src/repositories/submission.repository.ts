@@ -6,7 +6,10 @@ import {
 } from "../models/submission.model";
 
 export interface ISubmissionRepository {
-  create(submissionData: Partial<ISubmission>): Promise<ISubmission>;
+  create(
+    submissionData: Partial<ISubmission>,
+    userId: string,
+  ): Promise<ISubmission>;
   findById(id: string): Promise<ISubmission | null>;
   updateStatus(
     id: string,
@@ -15,6 +18,7 @@ export interface ISubmissionRepository {
   ): Promise<ISubmission | null>;
   findByProblemId(
     problemId: string,
+    userId: string,
     limit: number,
     page: number,
   ): Promise<{ submissions: ISubmission[]; total: number }>;
@@ -22,8 +26,14 @@ export interface ISubmissionRepository {
 }
 
 export class SubmissionRepository implements ISubmissionRepository {
-  async create(submissionData: Partial<ISubmission>): Promise<ISubmission> {
-    const newSubmission = await Submission.create(submissionData);
+  async create(
+    submissionData: Partial<ISubmission>,
+    userId: string,
+  ): Promise<ISubmission> {
+    const newSubmission = await Submission.create({
+      ...submissionData,
+      userId,
+    });
     return newSubmission;
   }
 
@@ -47,12 +57,13 @@ export class SubmissionRepository implements ISubmissionRepository {
 
   async findByProblemId(
     problemId: string,
+    userId: string,
     limit: number,
     page: number,
   ): Promise<{ submissions: ISubmission[]; total: number }> {
     const [submissions, total] = await Promise.all([
-      Submission.find({ problemId }).skip(page).limit(limit),
-      Submission.countDocuments({ problemId }),
+      Submission.find({ problemId, userId }).skip(page).limit(limit),
+      Submission.countDocuments({ problemId, userId }),
     ]);
 
     return { submissions, total };

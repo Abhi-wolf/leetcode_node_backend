@@ -3,7 +3,7 @@ import { serverConfig } from "../config";
 import { InternalServerError } from "../utils/errors/app.error";
 import logger from "../config/logger.config";
 import { getCorrelationId } from "../utils/helpers/request.helpers";
-import { ISubmissionData } from "../interfaces/evaluation.interface";
+import { ISubmissionData } from "../types/evaluation.interface";
 
 // NOT USING THIS FUNCTION ANYMORE, USING addStatusUpdateJob INSTEAD
 export async function updateSubmission(

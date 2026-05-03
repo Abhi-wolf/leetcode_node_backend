@@ -24,6 +24,7 @@ export interface ISubmissionData {
 export interface ISubmission extends Document {
   code: string;
   problemId: string;
+  userId: string;
   language: SubmissionLanguage;
   createdAt: Date;
   updatedAt: Date;
@@ -35,6 +36,7 @@ export interface ISubmission extends Document {
 
 const submissionSchema = new mongoose.Schema<ISubmission>(
   {
+    userId: { type: String, required: [true, "User Id is required"] },
     problemId: { type: String, required: [true, "Problem ID is required"] },
     code: { type: String, required: [true, "Code is required"] },
     language: {

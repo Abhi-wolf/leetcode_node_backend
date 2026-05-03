@@ -3,7 +3,7 @@ import { Database } from "../config/db";
 import {
   CreateRefreshTokenDto,
   RefreshToken,
-} from "../interfaces/refreshToken.interface";
+} from "../types/refreshToken.interface";
 
 type QueryExecutor = {
   query: <T extends QueryResultRow = QueryResultRow>(

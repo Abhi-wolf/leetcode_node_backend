@@ -6,7 +6,7 @@ import {
   TestCase,
   EvaluationStatus,
   ISubmissionData,
-} from "../interfaces/evaluation.interface";
+} from "../types/evaluation.interface";
 import { runCode } from "../utils/containers/codeRunner.util";
 import { LANGUAGE_CONFIG } from "../config/language.config";
 import { serverConfig } from "../config";

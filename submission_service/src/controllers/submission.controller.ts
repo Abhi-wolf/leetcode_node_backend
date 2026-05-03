@@ -1,6 +1,7 @@
-import {  Request, Response } from "express";
+import { Request, Response } from "express";
 import logger from "../config/logger.config";
 import { SubmissionService } from "../services/submission.service";
+import { AuthRequest } from "../types/request.type";
 
 export class SubmissionController {
   private submissionService: SubmissionService;
@@ -9,13 +10,15 @@ export class SubmissionController {
     this.submissionService = submissionService;
   }
 
-  createSubmission = async (req: Request, res: Response) => {
+  createSubmission = async (req: AuthRequest, res: Response) => {
     logger.info("Creating new submission", {
       problemId: req.body.problemId,
       language: req.body.language,
     });
 
-    const submission = await this.submissionService.createSubmission(req.body);
+    const userId = (req.user?.userId) as string;
+
+    const submission = await this.submissionService.createSubmission(req.body,userId);
 
     logger.info("Submission created successfully", {
       submissionId: submission.id,
@@ -28,9 +31,10 @@ export class SubmissionController {
     });
   };
 
-  getSubmissionById = async (req: Request, res: Response) => {
+  getSubmissionById = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
-    logger.info("Fetching submission by ID", { submissionId: id });
+    const userId = req.user?.userId;
+    logger.info("Fetching submission by ID", { submissionId: id , userId:userId});
 
     const submission = await this.submissionService.getSubmissionById(id);
 
@@ -43,15 +47,21 @@ export class SubmissionController {
     });
   };
 
-  getSubmissionsByProblemId = async (req: Request, res: Response) => {
+  getSubmissionsByProblemId = async (req: AuthRequest, res: Response) => {
     const { problemId } = req.params;
-    logger.info("Fetching submissions by problem ID", { problemId });
+    const userId = (req.user?.userId) as string;
+    logger.info("Fetching submissions by problem ID", { problemId, userId });
 
     const limit = parseInt(req.query.limit as string) || 5;
     const page = parseInt(req.query.page as string) || 1;
 
     const submissionResult =
-      await this.submissionService.getSubmissionsByProblemId(problemId, limit, page);
+      await this.submissionService.getSubmissionsByProblemId(
+        problemId,
+        userId,
+        limit,
+        page,
+      );
 
     logger.info("Submissions fetched successfully", {
       problemId,

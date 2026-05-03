@@ -6,6 +6,7 @@ type ServerConfig = {
   DB_URI: string;
   SERVICE_NAME: string;
   NODE_ENV: string;
+  JWT_ACCESS_SECRET:string;
   PROBLEM_SERVICE_URL: string;
   EVALUATION_JOB_NAME: string;
   SUBMISSION_QUEUE_NAME: string;
@@ -29,6 +30,8 @@ export const serverConfig: ServerConfig = {
   SERVICE_NAME: process.env.SERVICE_NAME || "submission-service",
   NODE_ENV: process.env.NODE_ENV || "development",
   REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
+
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || "ldfjsdfkEKFHWK#&!#*81273",
 
   EVALUATION_JOB_NAME: process.env.EVALUATION_JOB_NAME || "evaluate-submission",
   SUBMISSION_QUEUE_NAME:

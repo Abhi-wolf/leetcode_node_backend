@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthService } from "../services/auth.services";
 import logger from "../config/logger.config";
+import { AuthRequest } from "../types/request.type";
 
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -64,8 +65,8 @@ export class AuthController {
     });
   };
 
-  getMe = async (req: Request, res: Response) => {
-    const id = req.params.id;
+  getMe = async (req: AuthRequest, res: Response) => {
+    const id = (req.user?.userId) as string;
 
     const data = await this.authService.getMe(id);
 
